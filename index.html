@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskOps — контроль задач (GitHub Pages)</title>
+  <meta name="theme-color" content="#0b1220" />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#101a2e;
+      --panel2:#0f1a33;
+      --card:#0f203f;
+      --text:#e9f0ff;
+      --muted:#a9b6d3;
+      --line:rgba(255,255,255,.10);
+      --good:#30d158;
+      --warn:#ffd60a;
+      --bad:#ff453a;
+      --accent:#4da3ff;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+      --radius2:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background: radial-gradient(1200px 700px at 30% -10%, rgba(77,163,255,.25), transparent 60%),
+                         radial-gradient(900px 700px at 90% 10%, rgba(48,209,88,.18), transparent 60%),
+                         var(--bg);
+      color:var(--text); font-family:var(--sans);
+    }
+    a{color:var(--accent); text-decoration:none}
+    .wrap{max-width:1200px; margin:0 auto; padding:18px 14px 40px;}
+    header{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      position:sticky; top:0; z-index:20;
+      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.60));
+      backdrop-filter: blur(10px);
+      padding:14px 10px; margin:-18px -14px 18px;
+      border-bottom:1px solid var(--line);
+    }
+    .brand{display:flex; gap:10px; align-items:center}
+    .logo{
+      width:40px;height:40px;border-radius:12px;
+      background: linear-gradient(135deg, rgba(77,163,255,.95), rgba(48,209,88,.75));
+      box-shadow: var(--shadow);
+    }
+    .title h1{font-size:16px;margin:0}
+    .title p{margin:2px 0 0; color:var(--muted); font-size:12px}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    button, .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:9px 10px;
+      border-radius:12px;
+      font-size:13px;
+      cursor:pointer;
+      transition:.15s;
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    }
+    button:hover{transform: translateY(-1px); border-color: rgba(77,163,255,.35)}
+    button.primary{background: rgba(77,163,255,.18); border-color: rgba(77,163,255,.35)}
+    button.good{background: rgba(48,209,88,.16); border-color: rgba(48,209,88,.30)}
+    button.bad{background: rgba(255,69,58,.14); border-color: rgba(255,69,58,.30)}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px; border:1px solid var(--line);
+      background: rgba(255,255,255,.05); color:var(--muted); font-size:12px;
+    }
+    .grid{display:grid; gap:14px; grid-template-columns: 1.35fr .65fr}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    .panel{
+      background: linear-gradient(180deg, rgba(16,26,46,.85), rgba(16,26,46,.55));
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .hd{
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .panel .hd .left{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+    .panel .hd h2{margin:0; font-size:14px}
+    .panel .bd{padding:12px}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--muted)}
+    .tab.active{color:var(--text); border-color: rgba(77,163,255,.38); background: rgba(77,163,255,.12)}
+    .kpis{display:grid; gap:10px; grid-template-columns: repeat(4,1fr)}
+    @media (max-width: 980px){ .kpis{grid-template-columns: repeat(2,1fr)} }
+    .kpi{
+      background: rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:10px;
+    }
+    .kpi .n{font-family:var(--mono); font-size:18px}
+    .kpi .l{color:var(--muted); font-size:12px; margin-top:2px}
+    .kpi .b{height:6px; border-radius:999px; background: rgba(255,255,255,.08); margin-top:8px; overflow:hidden}
+    .kpi .b > i{display:block; height:100%; width:20%; background: rgba(77,163,255,.8)}
+    .split{display:grid; grid-template-columns: 1fr; gap:12px}
+    .filters{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px}
+    @media (max-width: 700px){ .filters{grid-template-columns:1fr} }
+    input, select, textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      border-radius: 12px;
+      padding:10px;
+      font-size:13px;
+      outline:none;
+    }
+    textarea{min-height:88px; resize:vertical}
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px 2px}
+    .form{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .form .full{grid-column:1 / -1}
+    .mini{font-size:12px;color:var(--muted)}
+    .divider{height:1px;background:var(--line); margin:10px 0}
+    .board{display:grid; gap:12px; grid-template-columns: repeat(3,1fr)}
+    @media (max-width: 980px){ .board{grid-template-columns:1fr} }
+    .col{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+      min-height: 260px;
+    }
+    .col .ch{
+      display:flex; justify-content:space-between; align-items:center; gap:8px;
+      padding:10px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .col .ch .name{font-size:13px}
+    .col .ch .count{font-family:var(--mono); color:var(--muted); font-size:12px}
+    .dropzone{padding:10px; display:grid; gap:10px}
+    .card{
+      background: linear-gradient(180deg, rgba(15,32,63,.88), rgba(15,32,63,.55));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding:10px;
+      cursor:grab;
+      box-shadow: 0 10px 18px rgba(0,0,0,.20);
+      position:relative;
+    }
+    .card:active{cursor:grabbing}
+    .card .t{font-size:13px; margin:0 0 6px}
+    .meta{display:flex; gap:8px; flex-wrap:wrap; color:var(--muted); font-size:11px}
+    .tag{border:1px solid var(--line); background:rgba(255,255,255,.04); padding:4px 8px; border-radius:999px}
+    .prio{font-weight:600}
+    .prio.p1{color:var(--bad)}
+    .prio.p2{color:var(--warn)}
+    .prio.p3{color:var(--good)}
+    .badge{
+      position:absolute; top:10px; right:10px;
+      border-radius:999px; padding:4px 8px;
+      font-size:11px; border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+    }
+    .badge.overdue{border-color: rgba(255,69,58,.35); background: rgba(255,69,58,.12); color: #ffd0cc}
+    .badge.soon{border-color: rgba(255,214,10,.35); background: rgba(255,214,10,.12); color: #fff3b3}
+    .list{display:grid; gap:10px}
+    .row{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.03);
+      padding:10px;
+      display:grid;
+      grid-template-columns: 1.2fr .6fr .6fr .6fr .6fr;
+      gap:10px;
+      align-items:center;
+    }
+    @media (max-width: 980px){
+      .row{grid-template-columns: 1fr; gap:6px}
+    }
+    .row .rtitle{font-size:13px}
+    .row .rsub{font-size:12px; color:var(--muted)}
+    .row .rcell{font-size:12px; color:var(--muted)}
+    .row .rbtns{display:flex; gap:8px; flex-wrap:wrap}
+    .ghost{opacity:.55}
+    .hint{font-size:12px; color:var(--muted); line-height:1.35}
+    .log{
+      font-family: var(--mono);
+      font-size: 11px;
+      white-space: pre-wrap;
+      background: rgba(0,0,0,.22);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:10px;
+      max-height: 220px;
+      overflow:auto;
+    }
+    .small{font-size:11px;color:var(--muted)}
+    .toast{
+      position:fixed; left:14px; right:14px; bottom:14px;
+      background: rgba(16,26,46,.92);
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding:10px 12px;
+      display:none;
+      box-shadow: var(--shadow);
+      z-index: 50;
+    }
+    .toast.show{display:block}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="title">
+          <h1>TaskOps — автоматизация задач и контроль выполнения</h1>
+          <p>Оффлайн-режим (LocalStorage) • без серверов • идеально для GitHub Pages</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <span class="pill" id="nowPill">—</span>
+        <button class="primary" id="btnNew">+ Новая задача</button>
+        <button id="btnNotify">🔔 Уведомления</button>
+        <button id="btnExport">⬇️ Экспорт</button>
+        <button id="btnImport">⬆️ Импорт</button>
+        <button class="bad" id="btnReset">Сброс</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- MAIN -->
+      <section class="panel">
+        <div class="hd">
+          <div class="left">
+            <h2>Рабочее пространство</h2>
+            <div class="tabs">
+              <button class="tab active" data-tab="board">Канбан</button>
+              <button class="tab" data-tab="list">Список</button>
+              <button class="tab" data-tab="analytics">Контроль</button>
+            </div>
+          </div>
+
+          <div class="left" style="gap:8px">
+            <span class="pill">Автопроцессы: <b id="autoState">вкл</b></span>
+            <button class="good" id="btnRunAutomation">▶ Прогнать автоматику</button>
+          </div>
+        </div>
+
+        <div class="bd">
+          <!-- Filters -->
+          <div class="filters" style="margin-bottom:12px">
+            <div>
+              <label>Поиск</label>
+              <input id="q" placeholder="текст, тег, ответственный…" />
+            </div>
+            <div>
+              <label>Статус</label>
+              <select id="fStatus">
+                <option value="">Все</option>
+                <option value="todo">К выполнению</option>
+                <option value="doing">В работе</option>
+                <option value="done">Готово</option>
+              </select>
+            </div>
+            <div>
+              <label>Показ</label>
+              <select id="fShow">
+                <option value="all">Все задачи</option>
+                <option value="overdue">Только просроченные</option>
+                <option value="today">Срок сегодня</option>
+                <option value="week">Срок в ближайшие 7 дней</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- TAB: BOARD -->
+          <div id="tab-board">
+            <div class="board">
+              <div class="col" data-status="todo">
+                <div class="ch">
+                  <div class="name">К выполнению</div>
+                  <div class="count" id="c_todo">0</div>
+                </div>
+                <div class="dropzone" id="dz_todo"></div>
+              </div>
+
+              <div class="col" data-status="doing">
+                <div class="ch">
+                  <div class="name">В работе</div>
+                  <div class="count" id="c_doing">0</div>
+                </div>
+                <div class="dropzone" id="dz_doing"></div>
+              </div>
+
+              <div class="col" data-status="done">
+                <div class="ch">
+                  <div class="name">Готово</div>
+                  <div class="count" id="c_done">0</div>
+                </div>
+                <div class="dropzone" id="dz_done"></div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="hint">
+              <b>Как работает “автоматика”:</b>
+              <ul style="margin:8px 0 0 18px; padding:0; color:var(--muted)">
+                <li>Подсвечивает просрочку / “скоро срок”.</li>
+                <li>Создаёт следующие повторяющиеся задачи (ежедневно/еженедельно/ежемесячно) после закрытия текущей.</li>
+                <li>Ведёт журнал действий (аудит).</li>
+                <li>Может отправлять браузерные уведомления (если разрешите).</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- TAB: LIST -->
+          <div id="tab-list" style="display:none">
+            <div class="list" id="list"></div>
+          </div>
+
+          <!-- TAB: ANALYTICS -->
+          <div id="tab-analytics" style="display:none">
+            <div class="kpis">
+              <div class="kpi">
+                <div class="n" id="k_all">0</div>
+                <div class="l">Всего задач</div>
+                <div class="b"><i id="b_all"></i></div>
+              </div>
+              <div class="kpi">
+                <div class="n" id="k_done">0</div>
+                <div class="l">Готово</div>
+                <div class="b"><i id="b_done"></i></div>
+              </div>
+              <div class="kpi">
+                <div class="n" id="k_overdue">0</div>
+                <div class="l">Просрочено</div>
+                <div class="b"><i id="b_overdue"></i></div>
+              </div>
+              <div class="kpi">
+                <div class="n" id="k_due7">0</div>
+                <div class="l">Срок ≤ 7 дней</div>
+                <div class="b"><i id="b_due7"></i></div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="split">
+              <div>
+                <h3 style="margin:0 0 8px; font-size:13px">Журнал контроля (audit log)</h3>
+                <div class="log" id="log"></div>
+                <div class="small" style="margin-top:8px">
+                  Совет: экспортируйте JSON раз в неделю как бэкап. Это удобно, если сайт крутится на GitHub Pages и нужно переносить данные между устройствами.
+                </div>
+              </div>
+
+              <div>
+                <h3 style="margin:0 0 8px; font-size:13px">Регламент контроля (шаблон)</h3>
+                <div class="hint">
+                  <ul style="margin:8px 0 0 18px; padding:0; color:var(--muted)">
+                    <li><b>Ежедневно</b>: фильтр “Срок сегодня” → закрыть/перепланировать.</li>
+                    <li><b>Каждый понедельник</b>: фильтр “≤ 7 дней” → назначить ответственных и приоритет.</li>
+                    <li><b>Контроль просрочки</b>: “Только просроченные” → обязательный комментарий причины и новая дата.</li>
+                    <li><b>Автоповторы</b>: используйте “Повтор” для рутинных задач (отчёты, проверки, оплаты).</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SIDE -->
+      <aside class="panel" id="sidePanel">
+        <div class="hd">
+          <div class="left">
+            <h2 id="formTitle">Новая задача</h2>
+          </div>
+          <div class="left">
+            <button id="btnCloseForm">✕</button>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div class="form">
+            <div class="full">
+              <label>Название</label>
+              <input id="t_title" placeholder="Например: Подготовить отчёт / Позвонить / Проверить…" />
+            </div>
+
+            <div class="full">
+              <label>Описание</label>
+              <textarea id="t_desc" placeholder="Суть, критерий готовности, ссылки, документы…"></textarea>
+            </div>
+
+            <div>
+              <label>Статус</label>
+              <select id="t_status">
+                <option value="todo">К выполнению</option>
+                <option value="doing">В работе</option>
+                <option value="done">Готово</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Приоритет</label>
+              <select id="t_prio">
+                <option value="1">P1 — срочно</option>
+                <option value="2" selected>P2 — важно</option>
+                <option value="3">P3 — спокойно</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Срок (дата)</label>
+              <input id="t_due" type="date" />
+            </div>
+
+            <div>
+              <label>Ответственный</label>
+              <input id="t_owner" placeholder="Например: Я / Иван / Отдел…" />
+            </div>
+
+            <div class="full">
+              <label>Теги (через запятую)</label>
+              <input id="t_tags" placeholder="волс, юр, финансы, дом, семья…" />
+            </div>
+
+            <div class="full">
+              <label>Чеклист (каждый пункт с новой строки)</label>
+              <textarea id="t_check" placeholder="1) …&#10;2) …&#10;3) …"></textarea>
+              <div class="mini">Автоматизация: если все пункты чеклиста отмечены — можно закрывать задачу в 1 клик.</div>
+            </div>
+
+            <div class="full">
+              <label>Повтор (автосоздание следующей задачи после “Готово”)</label>
+              <select id="t_repeat">
+                <option value="">Не повторять</option>
+                <option value="daily">Ежедневно</option>
+                <option value="weekly">Еженедельно</option>
+                <option value="monthly">Ежемесячно</option>
+              </select>
+              <div class="mini">Пример: “Еженедельно” + срок = ближайшая пятница → после закрытия создастся следующая с новым сроком.</div>
+            </div>
+
+            <div class="full" style="display:flex; gap:8px; flex-wrap:wrap">
+              <button class="primary" id="btnSave">💾 Сохранить</button>
+              <button class="good" id="btnMarkDone">✅ Закрыть</button>
+              <button class="bad" id="btnDelete">🗑 Удалить</button>
+            </div>
+
+            <div class="full">
+              <div class="divider"></div>
+              <div class="hint">
+                <b>Быстрые правила (встроено):</b>
+                <ul style="margin:8px 0 0 18px; padding:0; color:var(--muted)">
+                  <li>Просроченные задачи подсвечиваются и попадают в фильтр “Просроченные”.</li>
+                  <li>Если срок сегодня/завтра — пометка “скоро срок”.</li>
+                  <li>Повторяющиеся задачи создаются автоматически после закрытия.</li>
+                  <li>Журнал действий пишется автоматически (создание/правка/перетаскивание/закрытие).</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <input id="fileInput" type="file" accept="application/json" hidden />
+
+  <script>
+    /***********************
+     * TaskOps — Single-file app
+     * Storage: LocalStorage
+     * Works on GitHub Pages (no backend)
+     ***********************/
+
+    const LS_KEY = "taskops.v1.data";
+    const LS_LOG = "taskops.v1.log";
+    const SOON_DAYS = 1; // срок "скоро" = сегодня/завтра (1 день вперёд)
+
+    /** @type {Array<Task>} */
+    let tasks = [];
+    let editingId = null;
+
+    /** Utils */
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+    const uid = () => Math.random().toString(36).slice(2,10) + "-" + Date.now().toString(36);
+    const todayISO = () => new Date().toISOString().slice(0,10);
+
+    function parseDateISO(d){
+      if(!d) return null;
+      const t = new Date(d+"T00:00:00");
+      return isNaN(t.getTime()) ? null : t;
+    }
+    function daysBetween(a,b){
+      // b - a, in days
+      const ms = (b - a);
+      return Math.floor(ms / (1000*60*60*24));
+    }
+    function addDaysISO(dateISO, days){
+      const d = parseDateISO(dateISO || todayISO()) || new Date();
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0,10);
+    }
+    function addPeriodISO(dateISO, period){
+      // period: daily/weekly/monthly
+      const d = parseDateISO(dateISO || todayISO()) || new Date();
+      if(period === "daily") d.setDate(d.getDate() + 1);
+      if(period === "weekly") d.setDate(d.getDate() + 7);
+      if(period === "monthly") d.setMonth(d.getMonth() + 1);
+      return d.toISOString().slice(0,10);
+    }
+    function toast(msg){
+      const t = $("#toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 2600);
+    }
+    function log(msg){
+      const ts = new Date().toLocaleString("ru-RU");
+      const line = `[${ts}] ${msg}`;
+      const arr = loadLog();
+      arr.unshift(line);
+      localStorage.setItem(LS_LOG, JSON.stringify(arr.slice(0,400)));
+      renderLog();
+    }
+    function loadLog(){
+      try{ return JSON.parse(localStorage.getItem(LS_LOG) || "[]"); }catch{ return []; }
+    }
+
+    /** Data model */
+    function normalizeTask(t){
+      return {
+        id: t.id || uid(),
+        title: (t.title || "").trim(),
+        desc: t.desc || "",
+        status: t.status || "todo", // todo|doing|done
+        prio: String(t.prio || "2"), // 1|2|3
+        due: t.due || "", // YYYY-MM-DD
+        owner: t.owner || "",
+        tags: Array.isArray(t.tags) ? t.tags : (t.tags ? String(t.tags).split(",").map(s=>s.trim()).filter(Boolean) : []),
+        checklist: Array.isArray(t.checklist) ? t.checklist : [],
+        repeat: t.repeat || "", // ""|daily|weekly|monthly
+        createdAt: t.createdAt || Date.now(),
+        updatedAt: Date.now(),
+        lastDoneAt: t.lastDoneAt || null
+      };
+    }
+
+    function save(){
+      localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+      renderAll();
+    }
+    function load(){
+      try{
+        const raw = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+        tasks = raw.map(normalizeTask);
+      }catch{
+        tasks = [];
+      }
+
+      if(tasks.length === 0){
+        // seed examples
+        tasks = [
+          normalizeTask({
+            title:"Ежедневный контроль: просрочки и срок сегодня",
+            desc:"Открыть фильтр “Просроченные” и “Срок сегодня”. Перепланировать или закрыть.",
+            status:"todo", prio:"1", due: todayISO(), tags:["контроль"], owner:"Я", repeat:"daily",
+            checklist:[{text:"Проверить просрочки",done:false},{text:"Проверить срок сегодня",done:false}]
+          }),
+          normalizeTask({
+            title:"Еженедельный план: задачи на 7 дней",
+            desc:"По фильтру “≤ 7 дней” расставить приоритеты, назначить ответственных, уточнить сроки.",
+            status:"todo", prio:"2", due: addDaysISO(todayISO(), 3), tags:["план"], owner:"Я", repeat:"weekly"
+          }),
+          normalizeTask({
+            title:"Настроить уведомления (по желанию)",
+            desc:"Кнопка 🔔 → разрешить. Тогда просрочка/скоро срок будут напоминаться.",
+            status:"doing", prio:"3", due: addDaysISO(todayISO(), 1), tags:["система"], owner:"Я"
+          })
+        ];
+        localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+        log("Инициализация: создан стартовый набор задач.");
+      }
+    }
+
+    /** Filtering */
+    function matchesFilters(t){
+      const q = ($("#q").value || "").trim().toLowerCase();
+      const fStatus = $("#fStatus").value;
+      const fShow = $("#fShow").value;
+
+      if(fStatus && t.status !== fStatus) return false;
+
+      if(q){
+        const hay = [
+          t.title, t.desc, t.owner,
+          ...(t.tags || []).join(" "),
+          ...(t.checklist||[]).map(x=>x.text).join(" ")
+        ].join(" ").toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+
+      const now = parseDateISO(todayISO());
+      const due = parseDateISO(t.due);
+
+      if(fShow === "overdue"){
+        if(!(due && t.status !== "done" && due < now)) return false;
+      }
+      if(fShow === "today"){
+        if(!(t.due === todayISO())) return false;
+      }
+      if(fShow === "week"){
+        if(!(due && daysBetween(now, due) >= 0 && daysBetween(now, due) <= 7)) return false;
+      }
+
+      return true;
+    }
+
+    /** Automation Engine */
+    function computeFlags(t){
+      const now = parseDateISO(todayISO());
+      const due = parseDateISO(t.due);
+      const flags = {overdue:false, soon:false, dueIn:null};
+
+      if(due){
+        const diff = daysBetween(now, due);
+        flags.dueIn = diff;
+        if(t.status !== "done" && diff < 0) flags.overdue = true;
+        if(t.status !== "done" && diff >= 0 && diff <= SOON_DAYS) flags.soon = true;
+      }
+      return flags;
+    }
+
+    function runAutomation({silent=false}={}){
+      // 1) Create next recurring tasks if completed
+      // rule: if repeat != "" and status==done and (lastDoneAt recent) => create next and clear repeat on old? keep repeat on old
+      let created = 0;
+      for(const t of tasks){
+        if(!t.repeat) continue;
+        if(t.status !== "done") continue;
+
+        // prevent duplicate creation: if already created after this completion
+        // we store lastDoneAt on completion; and store on task: _spawnedFromDoneAt marker
+        if(!t.lastDoneAt) continue;
+        if(t._spawnedFromDoneAt === t.lastDoneAt) continue;
+
+        // create next task
+        const next = normalizeTask({
+          title: t.title,
+          desc: t.desc,
+          status: "todo",
+          prio: t.prio,
+          due: t.due ? addPeriodISO(t.due, t.repeat) : addPeriodISO(todayISO(), t.repeat),
+          owner: t.owner,
+          tags: t.tags,
+          repeat: t.repeat,
+          checklist: (t.checklist||[]).map(x=>({text:x.text, done:false}))
+        });
+        next._generatedBy = t.id;
+
+        tasks.push(next);
+        t._spawnedFromDoneAt = t.lastDoneAt;
+        created++;
+        log(`Авто: создан повтор "${next.title}" (срок ${next.due || "—"})`);
+      }
+
+      // 2) Notify for overdue/soon (if permission)
+      const notifyOk = (typeof Notification !== "undefined" && Notification.permission === "granted");
+      if(notifyOk){
+        const now = parseDateISO(todayISO());
+        const dueSoon = tasks.filter(t=>{
+          const f = computeFlags(t);
+          return (f.overdue || f.soon) && t.status !== "done";
+        });
+
+        // throttle: notify not more often than every 60 minutes
+        const last = Number(localStorage.getItem("taskops.v1.lastNotify") || "0");
+        const sinceMin = (Date.now() - last) / 60000;
+
+        if(dueSoon.length && sinceMin >= 60){
+          const overdueCount = dueSoon.filter(t=>computeFlags(t).overdue).length;
+          const soonCount = dueSoon.filter(t=>computeFlags(t).soon).length;
+
+          new Notification("TaskOps: контроль сроков", {
+            body: `Просрочено: ${overdueCount}, скоро срок: ${soonCount}. Откройте TaskOps для деталей.`,
+            silent: true
+          });
+          localStorage.setItem("taskops.v1.lastNotify", String(Date.now()));
+        }
+      }
+
+      if(!silent){
+        save();
+        toast(created ? `Автоматика: создано повторов — ${created}` : "Автоматика: изменений нет");
+      }else{
+        save();
+      }
+    }
+
+    /** Rendering */
+    function prioLabel(p){
+      if(p==="1") return "P1";
+      if(p==="2") return "P2";
+      return "P3";
+    }
+    function statusLabel(s){
+      if(s==="todo") return "К выполнению";
+      if(s==="doing") return "В работе";
+      return "Готово";
+    }
+
+    function cardHTML(t){
+      const f = computeFlags(t);
+      const dueTxt = t.due ? `Срок: ${t.due}` : "Срок: —";
+      const tags = (t.tags||[]).slice(0,4).map(x=>`<span class="tag">#${escapeHtml(x)}</span>`).join("");
+      const badge = f.overdue ? `<span class="badge overdue">просрочено</span>` :
+                    f.soon ? `<span class="badge soon">скоро срок</span>` : "";
+      return `
+        <div class="card" draggable="true" data-id="${t.id}">
+          ${badge}
+          <div class="t">${escapeHtml(t.title || "(без названия)")}</div>
+          <div class="meta">
+            <span class="tag prio ${t.prio==="1"?"p1":t.prio==="2"?"p2":"p3"}">${prioLabel(t.prio)}</span>
+            <span class="tag">${escapeHtml(dueTxt)}</span>
+            ${t.owner ? `<span class="tag">👤 ${escapeHtml(t.owner)}</span>` : ""}
+            ${tags}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBoard(){
+      const dzTodo = $("#dz_todo");
+      const dzDoing = $("#dz_doing");
+      const dzDone = $("#dz_done");
+      dzTodo.innerHTML = "";
+      dzDoing.innerHTML = "";
+      dzDone.innerHTML = "";
+
+      const filtered = tasks.filter(matchesFilters);
+
+      const todo = filtered.filter(t=>t.status==="todo");
+      const doing = filtered.filter(t=>t.status==="doing");
+      const done = filtered.filter(t=>t.status==="done");
+
+      $("#c_todo").textContent = String(todo.length);
+      $("#c_doing").textContent = String(doing.length);
+      $("#c_done").textContent = String(done.length);
+
+      todo.sort(sorter).forEach(t=>dzTodo.insertAdjacentHTML("beforeend", cardHTML(t)));
+      doing.sort(sorter).forEach(t=>dzDoing.insertAdjacentHTML("beforeend", cardHTML(t)));
+      done.sort(sorter).forEach(t=>dzDone.insertAdjacentHTML("beforeend", cardHTML(t)));
+
+      // drag handlers
+      $$(".card").forEach(el=>{
+        el.addEventListener("dragstart", (e)=>{
+          e.dataTransfer.setData("text/plain", el.dataset.id);
+          setTimeout(()=>el.classList.add("ghost"), 0);
+        });
+        el.addEventListener("dragend", ()=>{
+          el.classList.remove("ghost");
+        });
+        el.addEventListener("click", ()=>{
+          openEditor(el.dataset.id);
+        });
+      });
+
+      $$(".col").forEach(col=>{
+        col.addEventListener("dragover", (e)=>{ e.preventDefault(); });
+        col.addEventListener("drop", (e)=>{
+          e.preventDefault();
+          const id = e.dataTransfer.getData("text/plain");
+          const status = col.dataset.status;
+          moveTask(id, status);
+        });
+      });
+    }
+
+    function sorter(a,b){
+      // overdue first, then prio, then due asc, then updated desc
+      const fa = computeFlags(a), fb = computeFlags(b);
+      if(fa.overdue && !fb.overdue) return -1;
+      if(!fa.overdue && fb.overdue) return 1;
+
+      if(a.prio !== b.prio) return Number(a.prio) - Number(b.prio);
+
+      const da = a.due ? a.due : "9999-12-31";
+      const db = b.due ? b.due : "9999-12-31";
+      if(da !== db) return da.localeCompare(db);
+
+      return (b.updatedAt||0) - (a.updatedAt||0);
+    }
+
+    function renderList(){
+      const el = $("#list");
+      el.innerHTML = "";
+      const filtered = tasks.filter(matchesFilters).sort(sorter);
+      if(!filtered.length){
+        el.innerHTML = `<div class="hint">Ничего не найдено по фильтрам.</div>`;
+        return;
+      }
+
+      for(const t of filtered){
+        const f = computeFlags(t);
+        const due = t.due || "—";
+        const ov = f.overdue ? " • просрочено" : f.soon ? " • скоро срок" : "";
+        el.insertAdjacentHTML("beforeend", `
+          <div class="row">
+            <div>
+              <div class="rtitle">${escapeHtml(t.title || "(без названия)")}</div>
+              <div class="rsub">${escapeHtml((t.tags||[]).map(x=>"#"+x).join(" "))}</div>
+            </div>
+            <div class="rcell">Статус: <b>${statusLabel(t.status)}</b></div>
+            <div class="rcell">Приоритет: <b>${prioLabel(t.prio)}</b></div>
+            <div class="rcell">Срок: <b>${escapeHtml(due)}</b><span style="color:var(--muted)">${ov}</span></div>
+            <div class="rbtns">
+              <button class="primary" data-open="${t.id}">Открыть</button>
+              <button class="good" data-done="${t.id}">Готово</button>
+            </div>
+          </div>
+        `);
+      }
+
+      $$("button[data-open]").forEach(b=>b.addEventListener("click",()=>openEditor(b.dataset.open)));
+      $$("button[data-done]").forEach(b=>b.addEventListener("click",()=>markDone(b.dataset.done)));
+    }
+
+    function renderKPIs(){
+      const all = tasks.length;
+      const done = tasks.filter(t=>t.status==="done").length;
+      const now = parseDateISO(todayISO());
+      const overdue = tasks.filter(t=>{
+        const d = parseDateISO(t.due);
+        return d && t.status!=="done" && d < now;
+      }).length;
+      const due7 = tasks.filter(t=>{
+        const d = parseDateISO(t.due);
+        if(!d || t.status==="done") return false;
+        const diff = daysBetween(now, d);
+        return diff >= 0 && diff <= 7;
+      }).length;
+
+      $("#k_all").textContent = String(all);
+      $("#k_done").textContent = String(done);
+      $("#k_overdue").textContent = String(overdue);
+      $("#k_due7").textContent = String(due7);
+
+      const pct = (n)=> all ? Math.round((n/all)*100) : 0;
+      $("#b_all").style.width = "100%";
+      $("#b_done").style.width = pct(done) + "%";
+      $("#b_overdue").style.width = pct(overdue) + "%";
+      $("#b_due7").style.width = pct(due7) + "%";
+    }
+
+    function renderLog(){
+      const arr = loadLog();
+      $("#log").textContent = arr.length ? arr.join("\n") : "Журнал пуст.";
+    }
+
+    function renderAll(){
+      renderBoard();
+      renderList();
+      renderKPIs();
+      renderLog();
+    }
+
+    /** Editor */
+    function clearForm(){
+      editingId = null;
+      $("#formTitle").textContent = "Новая задача";
+      $("#t_title").value = "";
+      $("#t_desc").value = "";
+      $("#t_status").value = "todo";
+      $("#t_prio").value = "2";
+      $("#t_due").value = "";
+      $("#t_owner").value = "";
+      $("#t_tags").value = "";
+      $("#t_check").value = "";
+      $("#t_repeat").value = "";
+      $("#btnDelete").disabled = true;
+      $("#btnMarkDone").disabled = false;
+    }
+
+    function openEditor(id){
+      const t = tasks.find(x=>x.id===id);
+      if(!t) return;
+
+      editingId = id;
+      $("#formTitle").textContent = "Редактирование";
+      $("#t_title").value = t.title || "";
+      $("#t_desc").value = t.desc || "";
+      $("#t_status").value = t.status || "todo";
+      $("#t_prio").value = t.prio || "2";
+      $("#t_due").value = t.due || "";
+      $("#t_owner").value = t.owner || "";
+      $("#t_tags").value = (t.tags||[]).join(", ");
+      $("#t_repeat").value = t.repeat || "";
+      $("#t_check").value = (t.checklist||[]).map(x=>(x.done?"[x] ":"[ ] ")+x.text).join("\n");
+
+      $("#btnDelete").disabled = false;
+      $("#btnMarkDone").disabled = (t.status==="done");
+    }
+
+    function readChecklist(text){
+      const lines = String(text||"").split("\n").map(s=>s.trim()).filter(Boolean);
+      // allow [x] [ ] or plain
+      return lines.map(line=>{
+        const m = line.match(/^\[(x| )\]\s*(.*)$/i);
+        if(m) return {done: m[1].toLowerCase()==="x", text: (m[2]||"").trim()};
+        return {done:false, text: line.replace(/^[-•\d\)\.]+\s*/,"").trim()};
+      }).filter(x=>x.text);
+    }
+
+    function upsertFromForm(){
+      const data = normalizeTask({
+        id: editingId || uid(),
+        title: $("#t_title").value,
+        desc: $("#t_desc").value,
+        status: $("#t_status").value,
+        prio: $("#t_prio").value,
+        due: $("#t_due").value,
+        owner: $("#t_owner").value,
+        tags: $("#t_tags").value,
+        repeat: $("#t_repeat").value,
+        checklist: readChecklist($("#t_check").value),
+        createdAt: editingId ? (tasks.find(x=>x.id===editingId)?.createdAt || Date.now()) : Date.now(),
+        lastDoneAt: tasks.find(x=>x.id===editingId)?.lastDoneAt || null
+      });
+
+      if(!data.title){
+        toast("Введите название задачи.");
+        return;
+      }
+
+      if(editingId){
+        const idx = tasks.findIndex(x=>x.id===editingId);
+        tasks[idx] = {...tasks[idx], ...data, updatedAt: Date.now()};
+        log(`Правка: "${data.title}"`);
+      }else{
+        tasks.push({...data, createdAt: Date.now(), updatedAt: Date.now()});
+        log(`Создание: "${data.title}"`);
+      }
+
+      save();
+      toast("Сохранено");
+      openEditor(data.id);
+    }
+
+    function moveTask(id, newStatus){
+      const t = tasks.find(x=>x.id===id);
+      if(!t) return;
+      if(t.status === newStatus) return;
+
+      t.status = newStatus;
+      t.updatedAt = Date.now();
+
+      if(newStatus === "done" && !t.lastDoneAt){
+        t.lastDoneAt = Date.now();
+      }
+      if(newStatus !== "done"){
+        // if reopened, clear done marker to allow new completion event
+        t.lastDoneAt = null;
+      }
+
+      log(`Статус: "${t.title}" → ${statusLabel(newStatus)}`);
+      save();
+
+      // run automation quickly (recurring)
+      runAutomation({silent:true});
+    }
+
+    function markDone(id){
+      const t = tasks.find(x=>x.id===id);
+      if(!t) return;
+      t.status = "done";
+      t.updatedAt = Date.now();
+      t.lastDoneAt = Date.now();
+      log(`Закрыто: "${t.title}"`);
+      save();
+      runAutomation({silent:false});
+      if(editingId === id) openEditor(id);
+    }
+
+    function deleteTask(){
+      if(!editingId) return;
+      const t = tasks.find(x=>x.id===editingId);
+      if(!t) return;
+
+      if(!confirm(`Удалить задачу "${t.title}"?`)) return;
+      tasks = tasks.filter(x=>x.id!==editingId);
+      log(`Удалено: "${t.title}"`);
+      save();
+      clearForm();
+      toast("Удалено");
+    }
+
+    /** Export/Import */
+    function download(filename, text){
+      const blob = new Blob([text], {type:"application/json;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportData(){
+      const payload = {
+        meta: {app:"TaskOps", version:"1.0", exportedAt: new Date().toISOString()},
+        tasks,
+        log: loadLog()
+      };
+      download(`taskops_backup_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
+      toast("Экспортировано в JSON");
+    }
+
+    function importData(file){
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const payload = JSON.parse(String(reader.result||"{}"));
+          if(payload && Array.isArray(payload.tasks)){
+            tasks = payload.tasks.map(normalizeTask);
+            localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+            if(Array.isArray(payload.log)) localStorage.setItem(LS_LOG, JSON.stringify(payload.log));
+            log("Импорт: данные загружены.");
+            renderAll();
+            toast("Импорт завершён");
+          }else{
+            toast("Файл не похож на бэкап TaskOps.");
+          }
+        }catch{
+          toast("Ошибка чтения JSON.");
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    /** Notifications */
+    async function requestNotify(){
+      if(typeof Notification === "undefined"){
+        toast("Уведомления не поддерживаются в этом браузере.");
+        return;
+      }
+      if(Notification.permission === "granted"){
+        toast("Уведомления уже разрешены.");
+        return;
+      }
+      const p = await Notification.requestPermission();
+      toast(p === "granted" ? "Уведомления включены." : "Уведомления не разрешены.");
+    }
+
+    /** Tabs */
+    function setTab(name){
+      $$(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
+      $("#tab-board").style.display = (name==="board") ? "" : "none";
+      $("#tab-list").style.display = (name==="list") ? "" : "none";
+      $("#tab-analytics").style.display = (name==="analytics") ? "" : "none";
+      renderAll();
+    }
+
+    /** HTML escape */
+    function escapeHtml(str){
+      return String(str||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /** Clock */
+    function tickNow(){
+      const d = new Date();
+      $("#nowPill").textContent = d.toLocaleString("ru-RU", {weekday:"short", day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"});
+    }
+
+    /** Events */
+    function bind(){
+      $("#btnNew").addEventListener("click", ()=>{
+        clearForm();
+        toast("Создайте задачу и нажмите “Сохранить”.");
+      });
+      $("#btnCloseForm").addEventListener("click", ()=>{
+        // just clear for now
+        clearForm();
+      });
+      $("#btnSave").addEventListener("click", upsertFromForm);
+      $("#btnDelete").addEventListener("click", deleteTask);
+      $("#btnMarkDone").addEventListener("click", ()=>{
+        if(!editingId) return;
+        markDone(editingId);
+      });
+
+      $("#btnExport").addEventListener("click", exportData);
+      $("#btnImport").addEventListener("click", ()=> $("#fileInput").click());
+      $("#fileInput").addEventListener("change", (e)=>{
+        const f = e.target.files && e.target.files[0];
+        if(f) importData(f);
+        e.target.value = "";
+      });
+
+      $("#btnReset").addEventListener("click", ()=>{
+        if(!confirm("Сбросить все задачи и журнал?")) return;
+        localStorage.removeItem(LS_KEY);
+        localStorage.removeItem(LS_LOG);
+        localStorage.removeItem("taskops.v1.lastNotify");
+        load();
+        log("Сброс: данные очищены.");
+        renderAll();
+        clearForm();
+        toast("Сброшено");
+      });
+
+      $("#btnNotify").addEventListener("click", requestNotify);
+
+      $$(".tab").forEach(btn=>{
+        btn.addEventListener("click", ()=>setTab(btn.dataset.tab));
+      });
+
+      // filters
+      ["q","fStatus","fShow"].forEach(id=>{
+        $("#"+id).addEventListener("input", renderAll);
+        $("#"+id).addEventListener("change", renderAll);
+      });
+
+      $("#btnRunAutomation").addEventListener("click", ()=>runAutomation({silent:false}));
+
+      // keyboard shortcuts
+      window.addEventListener("keydown", (e)=>{
+        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
+          e.preventDefault();
+          $("#q").focus();
+        }
+        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="n"){
+          e.preventDefault();
+          clearForm();
+          $("#t_title").focus();
+        }
+        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="s"){
+          e.preventDefault();
+          upsertFromForm();
+        }
+      });
+    }
+
+    /** Boot */
+    function boot(){
+      load();
+      bind();
+      clearForm();
+      renderAll();
+      tickNow();
+      setInterval(tickNow, 1000 * 10);
+
+      // periodic automation (every 5 min)
+      setInterval(()=>runAutomation({silent:true}), 1000 * 60 * 5);
+      runAutomation({silent:true});
+    }
+
+    boot();
+  </script>
+
+  <!--
+    Как развернуть на GitHub Pages:
+    1) Создайте репозиторий (например taskops).
+    2) Добавьте файл index.html (этот файл) в корень репозитория.
+    3) Settings → Pages → Build and deployment → Source: Deploy from a branch
+       Branch: main / root.
+    4) Откройте ссылку Pages — готово.
+  -->
+</body>
+</html>
