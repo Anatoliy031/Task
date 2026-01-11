@@ -3,377 +3,315 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Task-трекер — ДРНУ (Кубаньэнерго)</title>
+  <title>Трекер задач — ДРНУ (Кубаньэнерго)</title>
   <style>
-    :root {
-      --bg: #0b1220;
-      --card: #111b2e;
-      --card2: #0f172a;
-      --text: #e6eefc;
-      --muted: #a8b3c7;
-      --line: rgba(255,255,255,.10);
-      --good: #4ade80;
-      --warn: #fbbf24;
-      --bad:  #fb7185;
-      --info: #60a5fa;
-      --chip: rgba(255,255,255,.08);
-      --shadow: 0 18px 60px rgba(0,0,0,.35);
-      --r: 16px;
+    :root{
+      --bg:#0b1220;
+      --card:#101b31;
+      --line:rgba(255,255,255,.10);
+      --text:#eaf1ff;
+      --muted:#a8b3c7;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --info:#60a5fa;
+      --chip:rgba(255,255,255,.06);
+      --shadow:0 18px 60px rgba(0,0,0,.35);
+      --r:16px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: var(--sans);
-      background: radial-gradient(1200px 700px at 15% 10%, rgba(96,165,250,.18), transparent 55%),
-                  radial-gradient(1000px 700px at 85% 0%, rgba(74,222,128,.12), transparent 50%),
-                  var(--bg);
-      color: var(--text);
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1100px 700px at 18% 10%, rgba(96,165,250,.18), transparent 55%),
+        radial-gradient(1000px 700px at 85% 0%, rgba(52,211,153,.12), transparent 50%),
+        var(--bg);
     }
-    a { color: inherit; }
-    .wrap { max-width: 1180px; margin: 0 auto; padding: 18px; }
-    .topbar {
-      display: flex; gap: 12px; align-items: center; justify-content: space-between;
-      padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r);
-      background: rgba(17,27,46,.75); backdrop-filter: blur(10px); box-shadow: var(--shadow);
-      position: sticky; top: 10px; z-index: 20;
-    }
-    .title { display:flex; flex-direction:column; gap:4px; }
-    .title h1 { margin:0; font-size: 16px; letter-spacing: .2px; }
-    .title div { color: var(--muted); font-size: 12px; }
-    .tabs { display:flex; gap: 8px; align-items:center; flex-wrap: wrap; }
-    .tab {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
-      padding: 8px 10px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .tab.active { background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.45); }
-    .grid {
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 14px;
-      align-items: start;
-    }
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-      .topbar { position: static; }
-    }
-    .card {
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: rgba(17,27,46,.65);
+    .wrap{max-width:1200px;margin:0 auto;padding:14px}
+    .top{
+      position:sticky; top:10px; z-index:30;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(16,27,49,.78);
       backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      box-shadow:var(--shadow);
     }
-    .card .hd {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      display:flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
+    .title{display:flex;flex-direction:column;gap:4px}
+    .title h1{margin:0;font-size:15px;letter-spacing:.2px}
+    .sub{font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .statusDot{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
+    .statusDot.ok{background:var(--good)}
+    .statusDot.bad{background:var(--bad)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+      white-space:nowrap;
     }
-    .card .hd .h {
-      font-size: 13px; font-weight: 700;
-      display:flex; align-items:center; gap:10px;
-    }
-    .card .bd { padding: 14px; }
-    .muted { color: var(--muted); }
-    .chips { display:flex; flex-wrap: wrap; gap: 8px; }
-    .chip {
-      background: var(--chip);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
+    button.primary{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.55)}
+    button.good{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.45)}
+    button.danger{background:rgba(251,113,133,.16);border-color:rgba(251,113,133,.45)}
+    button:disabled{opacity:.55;cursor:not-allowed}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{
+      background:var(--chip);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
       display:flex;
       align-items:center;
-      gap: 8px;
-      white-space: nowrap;
+      gap:8px;
+      white-space:nowrap;
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--info); }
-    .dot.good { background: var(--good); }
-    .dot.warn { background: var(--warn); }
-    .dot.bad { background: var(--bad); }
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--info)}
+    .dot.good{background:var(--good)}
+    .dot.warn{background:var(--warn)}
+    .dot.bad{background:var(--bad)}
 
-    label { display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-    input, select, textarea {
-      width: 100%;
-      background: rgba(15,23,42,.75);
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px 10px;
-      outline: none;
-      font-size: 13px;
+    .grid{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap:12px;
+      align-items:start;
     }
-    textarea { min-height: 78px; resize: vertical; }
-    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 640px) {
-      .row { grid-template-columns: 1fr; }
+    @media (max-width: 980px){
+      .top{position:static}
+      .grid{grid-template-columns:1fr}
     }
-    .btns { display:flex; gap: 8px; flex-wrap: wrap; }
-    button {
-      cursor: pointer;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color: var(--text);
-      padding: 9px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-    }
-    button.primary { background: rgba(96,165,250,.20); border-color: rgba(96,165,250,.55); }
-    button.danger { background: rgba(251,113,133,.16); border-color: rgba(251,113,133,.45); }
-    button.good { background: rgba(74,222,128,.14); border-color: rgba(74,222,128,.40); }
-    button:disabled { opacity:.55; cursor:not-allowed; }
 
-    .table-wrap { overflow:auto; border-radius: 14px; border:1px solid var(--line); }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 860px;
-      background: rgba(15,23,42,.55);
-    }
-    th, td {
-      padding: 10px 10px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      vertical-align: top;
-      font-size: 13px;
-    }
-    th {
-      position: sticky; top: 0;
-      background: rgba(15,23,42,.95);
-      text-align: left;
-      color: var(--muted);
-      font-weight: 600;
-      z-index: 5;
-    }
-    tr:hover td { background: rgba(255,255,255,.03); }
-    .mono { font-family: var(--mono); font-size: 12px; }
-    .pill {
-      display:inline-flex; align-items:center; gap:8px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .pill.bad { border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.12); }
-    .pill.warn { border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.10); }
-    .pill.good { border-color: rgba(74,222,128,.45); background: rgba(74,222,128,.10); }
-
-    .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,.55);
-      display: none; align-items:center; justify-content:center; padding: 16px;
-      z-index: 50;
-    }
-    .modal.open { display:flex; }
-    .modal .box {
-      width: min(720px, 100%);
-      background: rgba(17,27,46,.90);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background:rgba(16,27,49,.70);
+      backdrop-filter: blur(10px);
+      box-shadow:var(--shadow);
       overflow:hidden;
     }
-    .modal .box .hd {
-      padding: 12px 14px; border-bottom: 1px solid var(--line);
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    .hd{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap
     }
-    .modal .box .bd { padding: 14px; }
+    .hd .h{font-size:13px;font-weight:800}
+    .bd{padding:12px 14px}
 
-    .timeline {
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input, select, textarea{
+      width:100%;
+      background:rgba(10,18,36,.75);
       border:1px solid var(--line);
-      border-radius: 14px;
-      overflow: auto;
-      background: rgba(15,23,42,.55);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 10px;
+      font-size:13px;
+      outline:none;
     }
-    .tl { min-width: 980px; }
-    .tl-head {
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      position: sticky; top: 0;
-      background: rgba(15,23,42,.95);
-      z-index: 5;
-      border-bottom:1px solid rgba(255,255,255,.08);
+    textarea{min-height:84px;resize:vertical}
+    .two{display:grid;grid-template-columns: 1fr 1fr; gap:10px}
+    @media (max-width: 640px){ .two{grid-template-columns:1fr} }
+
+    .quick{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center
     }
-    .tl-head .left {
-      padding: 10px; color: var(--muted); font-size: 12px; font-weight: 600;
-      border-right: 1px solid rgba(255,255,255,.08);
+    .qbtn{
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
     }
-    .months { display:grid; grid-template-columns: repeat(12, 1fr); }
-    .months div {
-      padding: 10px 6px;
-      border-left: 1px solid rgba(255,255,255,.06);
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-      white-space: nowrap;
+    .qbtn.active{
+      background:rgba(96,165,250,.18);
+      border-color:rgba(96,165,250,.55);
     }
-    .tl-row {
-      display:grid;
-      grid-template-columns: 280px 1fr;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-    .tl-row .who {
-      padding: 10px;
-      border-right: 1px solid rgba(255,255,255,.08);
-    }
-    .who .nm { font-size: 13px; font-weight: 650; }
-    .who .ps { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .bars {
-      position: relative;
-      height: 54px;
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: calc(100%/12) 100%;
-    }
-    .bar {
-      position:absolute; top: 14px; height: 26px;
-      border-radius: 999px;
-      border: 1px solid rgba(96,165,250,.55);
-      background: rgba(96,165,250,.18);
-      display:flex; align-items:center; justify-content:center;
-      padding: 0 10px;
-      font-size: 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .bar.alt {
-      border-color: rgba(74,222,128,.50);
-      background: rgba(74,222,128,.12);
-    }
-    .legend {
-      display:flex; gap: 10px; flex-wrap: wrap; align-items:center;
-      font-size: 12px; color: var(--muted);
-    }
-    .sep { height: 1px; background: var(--line); margin: 12px 0; }
-    .small { font-size: 12px; }
-    .kbd {
-      font-family: var(--mono);
+
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
+    table{width:100%;border-collapse:collapse;min-width:920px;background:rgba(10,18,36,.55)}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;vertical-align:top}
+    th{position:sticky;top:0;background:rgba(10,18,36,.95);color:var(--muted);font-weight:700;text-align:left;z-index:2}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .mono{font-family:var(--mono);font-size:12px;color:#d7e3ff}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
       border:1px solid var(--line);
-      border-bottom-color: rgba(255,255,255,.2);
-      background: rgba(255,255,255,.04);
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-size: 11px;
-      color: var(--muted);
+      background:rgba(255,255,255,.03);
+      border-radius:999px;
+      padding:5px 10px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .badge.bad{border-color:rgba(251,113,133,.45);background:rgba(251,113,133,.12)}
+    .badge.warn{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.10)}
+    .badge.good{border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
+
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .hint{font-size:12px;color:var(--muted);line-height:1.35}
+
+    /* Модалки */
+    .modal{
+      position:fixed; inset:0; z-index:60;
+      background:rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center;
+      padding:14px;
+    }
+    .modal.open{display:flex}
+    .box{
+      width:min(780px, 100%);
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(16,27,49,.92);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .box .hd{border-bottom:1px solid var(--line)}
+    .box .bd{padding:14px}
+    .rightBtns{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+
+    .warnLine{
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(251,191,36,.45);
+      background:rgba(251,191,36,.10);
+      font-size:12px;
+    }
+
+    .vacBox{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 10px;
+      background:rgba(10,18,36,.45);
+    }
+    details summary{
+      cursor:pointer;
+      list-style:none;
+      font-weight:700;
+      font-size:13px;
+    }
+    details summary::-webkit-details-marker{display:none}
+    .vacList{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+    .vacItem{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      font-size:12px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      padding:7px 9px;
+      border-radius:12px;
     }
   </style>
 </head>
-
 <body>
   <div class="wrap">
-    <div class="topbar">
+    <div class="top">
       <div class="title">
-        <h1>Task-трекер (6 полей) — ДРНУ, Филиал ПАО «Россети Юг» — «Кубаньэнерго»</h1>
-        <div id="subtitle" class="muted">Локальное хранение в браузере (localStorage). Работает на GitHub Pages.</div>
+        <h1>Трекер задач ДРНУ</h1>
+        <div class="sub">
+          <span><span id="syncDot" class="statusDot"></span> <span id="syncText">не настроена синхронизация</span></span>
+          <span class="muted">•</span>
+          <span class="muted">общий файл: <span class="mono" id="filePathView">tasks.json</span></span>
+        </div>
       </div>
-      <div class="tabs">
-        <button class="tab active" data-tab="tasks">Задачи</button>
-        <button class="tab" data-tab="vacations">Отпуска</button>
-        <button class="tab" data-tab="help">Помощь</button>
+      <div class="actions">
+        <button id="btnLoad">Загрузить</button>
+        <button id="btnSave" class="good">Сохранить</button>
+        <button id="btnSummary" class="primary">Сводка (копировать)</button>
+        <button id="btnSettings">Настройки</button>
       </div>
     </div>
 
-    <!-- TASKS TAB -->
-    <section id="tab-tasks" class="grid" style="display:grid;">
+    <div style="margin-top:10px" class="row">
+      <div class="chips" id="kpi"></div>
+      <div style="margin-left:auto" class="row">
+        <label style="margin:0;display:flex;gap:8px;align-items:center" class="small">
+          <span class="muted">Я:</span>
+          <select id="meSel" style="width:auto;min-width:260px"></select>
+        </label>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- ЛЕВО: таблица -->
       <div class="card">
         <div class="hd">
-          <div class="h">Реестр задач</div>
-          <div class="legend">
-            <span class="pill bad"><span class="dot bad"></span>🔴 просрочено</span>
-            <span class="pill warn"><span class="dot warn"></span>🟡 ≤3 дня</span>
-            <span class="pill"><span class="dot"></span>остальное</span>
-          </div>
+          <div class="h">Задачи</div>
+          <div class="quick" id="quickFilters"></div>
         </div>
         <div class="bd">
-          <div class="chips" id="summaryChips"></div>
-          <div class="sep"></div>
-
-          <div class="row">
+          <div class="two">
             <div>
-              <label>Поиск (ID / задача / владелец)</label>
-              <input id="q" placeholder="Например: ВОЛС, договор, ФАС, T-012..." />
+              <label>Поиск</label>
+              <input id="q" placeholder="ID / задача / ответственный / следующий шаг" />
             </div>
-            <div class="row" style="grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="two" style="grid-template-columns: 1fr 1fr;">
               <div>
-                <label>Владелец</label>
+                <label>Ответственный</label>
                 <select id="fOwner"></select>
               </div>
               <div>
                 <label>Статус</label>
                 <select id="fStatus">
                   <option value="">Все</option>
-                  <option value="Backlog">Backlog</option>
-                  <option value="In progress">In progress</option>
-                  <option value="Done">Done</option>
+                  <option value="В план">В план</option>
+                  <option value="В работе">В работе</option>
+                  <option value="Готово">Готово</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center;">
-            <label style="margin:0; display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="onlyHot" style="width:auto; transform: scale(1.05);" />
-              <span class="small">Только 🔴/🟡</span>
-            </label>
-
-            <div class="btns" style="margin-left:auto;">
-              <button id="btnExport">Экспорт JSON</button>
-              <button id="btnImport">Импорт JSON</button>
-              <input id="importFile" type="file" accept="application/json" style="display:none" />
-              <button id="btnClear" class="danger">Сбросить всё</button>
-            </div>
-          </div>
-
-          <div class="sep"></div>
-
-          <div class="table-wrap">
+          <div style="margin-top:10px" class="tableWrap">
             <table>
               <thead>
                 <tr>
-                  <th style="width:90px;">ID</th>
+                  <th style="width:110px">ID</th>
                   <th>Задача</th>
-                  <th style="width:190px;">Владелец</th>
-                  <th style="width:130px;">Срок</th>
-                  <th style="width:140px;">Статус</th>
-                  <th>След. шаг</th>
+                  <th style="width:220px">Ответственный</th>
+                  <th style="width:150px">Срок</th>
+                  <th style="width:120px">Статус</th>
+                  <th>Следующий шаг</th>
                 </tr>
               </thead>
-              <tbody id="tasksBody"></tbody>
+              <tbody id="tb"></tbody>
             </table>
           </div>
 
-          <div class="sep"></div>
-          <div class="muted small">
-            Подсказка: клик по строке — редактирование. Быстрое добавление: <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> в форме справа.
+          <div class="hint" style="margin-top:10px">
+            Клик по строке — редактирование. Просрочка — 🔴, срок ≤ 3 дней — 🟡.
           </div>
         </div>
       </div>
 
+      <!-- ПРАВО: добавление + отпуска -->
       <div class="card">
         <div class="hd">
-          <div class="h">Добавить задачу (6 полей)</div>
-          <div class="muted small">ID присвоится автоматически</div>
+          <div class="h">Быстро добавить</div>
+          <div class="rightBtns">
+            <button id="btnNew" class="primary">Новая задача</button>
+          </div>
         </div>
         <div class="bd">
           <div>
             <label>Задача</label>
-            <textarea id="nTask" placeholder="Коротко и по делу: что нужно сделать?"></textarea>
+            <textarea id="nTask" placeholder="Коротко и понятно: что сделать?"></textarea>
           </div>
-          <div class="row" style="margin-top:10px;">
+
+          <div class="two" style="margin-top:10px">
             <div>
-              <label>Владелец</label>
+              <label>Ответственный</label>
               <select id="nOwner"></select>
             </div>
             <div>
@@ -381,108 +319,55 @@
               <input id="nDue" type="date" />
             </div>
           </div>
-          <div class="row" style="margin-top:10px;">
+
+          <div class="two" style="margin-top:10px">
             <div>
               <label>Статус</label>
               <select id="nStatus">
-                <option>Backlog</option>
-                <option selected>In progress</option>
-                <option>Done</option>
+                <option>В план</option>
+                <option selected>В работе</option>
+                <option>Готово</option>
               </select>
             </div>
             <div>
               <label>Следующий шаг</label>
-              <input id="nNext" placeholder="Одно действие: позвонить/подготовить/согласовать..." />
+              <input id="nNext" placeholder="Одно действие: согласовать / отправить / позвонить..." />
             </div>
           </div>
 
-          <div class="btns" style="margin-top:12px;">
-            <button class="primary" id="btnAdd">Добавить</button>
-            <button id="btnAddDemo">Заполнить демо</button>
+          <div id="nWarn" class="warnLine" style="display:none"></div>
+
+          <div class="row" style="margin-top:10px">
+            <button id="btnAdd" class="good">Добавить</button>
+            <button id="btnClearNew">Очистить</button>
           </div>
 
-          <div class="sep"></div>
-
-          <div class="card" style="background: rgba(255,255,255,.02); box-shadow:none;">
-            <div class="bd">
-              <div class="h" style="font-size:13px; font-weight:700;">Сотрудники</div>
-              <div class="muted small" style="margin-top:6px;">
-                Из графика отпусков загружено <span id="empCount"></span>. Можно добавить недостающего сотрудника вручную — он появится в списках владельцев задач.
+          <div style="margin-top:14px" class="vacBox">
+            <details>
+              <summary>Отпуска (контроль)</summary>
+              <div class="muted small" style="margin-top:6px">
+                Подтягивается из <span class="mono">vacations.json</span>. Полезно, чтобы не ставить сроки на людей в отпуске.
               </div>
-              <div class="row" style="margin-top:10px;">
-                <div>
-                  <label>ФИО</label>
-                  <input id="empName" placeholder="Например: Иванов Иван Иванович" />
-                </div>
-                <div>
-                  <label>Должность (необязательно)</label>
-                  <input id="empPos" placeholder="Например: главный специалист" />
-                </div>
-              </div>
-              <div class="btns" style="margin-top:10px;">
-                <button class="good" id="btnAddEmp">Добавить сотрудника</button>
-              </div>
-              <div class="muted small" style="margin-top:10px;">
-                Важно: сотрудники и задачи хранятся в вашем браузере. Для общего доступа — импорт/экспорт JSON.
-              </div>
-            </div>
+              <div class="vacList" id="vacToday"></div>
+              <div class="vacList" id="vacSoon" style="margin-top:8px"></div>
+            </details>
           </div>
 
-        </div>
-      </div>
-    </section>
-
-    <!-- VACATIONS TAB -->
-    <section id="tab-vacations" class="grid" style="display:none;">
-      <div class="card" style="grid-column: 1 / -1;">
-        <div class="hd">
-          <div class="h">График отпусков — визуализация</div>
-          <div class="btns">
-            <select id="yearSel" style="width:auto; min-width: 120px;"></select>
-            <button id="btnUpcoming">Ближайшие 60 дней</button>
-          </div>
-        </div>
-        <div class="bd">
-          <div class="muted small" id="vacInfo"></div>
-          <div class="sep"></div>
-
-          <div class="timeline">
-            <div class="tl" id="tl"></div>
-          </div>
-
-          <div class="sep"></div>
-          <div id="upcomingBox" class="muted small"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- HELP TAB -->
-    <section id="tab-help" class="grid" style="display:none;">
-      <div class="card" style="grid-column: 1 / -1;">
-        <div class="hd"><div class="h">Как развернуть на GitHub Pages</div></div>
-        <div class="bd">
-          <ol class="small">
-            <li>Создайте репозиторий, например <span class="kbd">drnu-task-tracker</span>.</li>
-            <li>Добавьте файл <span class="kbd">index.html</span> и вставьте туда этот код целиком.</li>
-            <li>В GitHub: <span class="kbd">Settings → Pages</span> → Source: <span class="kbd">Deploy from a branch</span> → Branch: <span class="kbd">main</span> / folder <span class="kbd">/ (root)</span>.</li>
-            <li>Откройте ссылку Pages — трекер заработает.</li>
-          </ol>
-          <div class="sep"></div>
-          <div class="muted small">
-            Данные задач/сотрудников хранятся локально в браузере. Чтобы переносить между устройствами — используйте “Экспорт/Импорт JSON”.
+          <div class="hint" style="margin-top:12px">
+            “По-взрослому”: общий файл <span class="mono">tasks.json</span> в репозитории.
+            Чтобы сохранять изменения — нужен GitHub токен у сотрудника (вводится в “Настройках” и хранится только у него в браузере).
           </div>
         </div>
       </div>
-    </section>
-
+    </div>
   </div>
 
-  <!-- EDIT MODAL -->
-  <div id="modal" class="modal" role="dialog" aria-modal="true">
+  <!-- МОДАЛКА: редактирование -->
+  <div id="mEdit" class="modal" role="dialog" aria-modal="true">
     <div class="box">
       <div class="hd">
-        <div class="h">Редактирование задачи <span id="mId" class="mono"></span></div>
-        <div class="btns">
+        <div class="h">Задача <span class="mono" id="mId"></span></div>
+        <div class="rightBtns">
           <button id="mClose">Закрыть</button>
         </div>
       </div>
@@ -491,9 +376,10 @@
           <label>Задача</label>
           <textarea id="mTask"></textarea>
         </div>
-        <div class="row" style="margin-top:10px;">
+
+        <div class="two" style="margin-top:10px">
           <div>
-            <label>Владелец</label>
+            <label>Ответственный</label>
             <select id="mOwner"></select>
           </div>
           <div>
@@ -501,13 +387,14 @@
             <input id="mDue" type="date" />
           </div>
         </div>
-        <div class="row" style="margin-top:10px;">
+
+        <div class="two" style="margin-top:10px">
           <div>
             <label>Статус</label>
             <select id="mStatus">
-              <option>Backlog</option>
-              <option>In progress</option>
-              <option>Done</option>
+              <option>В план</option>
+              <option>В работе</option>
+              <option>Готово</option>
             </select>
           </div>
           <div>
@@ -515,582 +402,750 @@
             <input id="mNext" />
           </div>
         </div>
-        <div class="btns" style="margin-top:12px;">
-          <button class="primary" id="mSave">Сохранить</button>
-          <button class="danger" id="mDel">Удалить</button>
-          <button class="good" id="mDone">Отметить Done</button>
+
+        <div id="mWarn" class="warnLine" style="display:none"></div>
+
+        <div class="row" style="margin-top:12px">
+          <button id="mSave" class="good">Сохранить</button>
+          <button id="mDone" class="primary">Отметить “Готово”</button>
+          <button id="mDel" class="danger">Удалить</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    // ====== Встроенные данные графика отпусков (из вашего файла) ======
-    const VACATION_DATA = [
-      {
-        "name": "Абусалимов Анатолий Лачинович",
-        "position": "Начальник департамента",
-        "vacations": [
-          { "start": "2026-03-02", "end": "2026-03-06", "days": 5 },
-          { "start": "2026-06-15", "end": "2026-06-27", "days": 13 },
-          { "start": "2026-08-31", "end": "2026-09-09", "days": 10 }
-        ]
-      },
-      {
-        "name": "Бугаенко Наталья Викторовна",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-04-20", "end": "2026-04-26", "days": 7 },
-          { "start": "2026-07-20", "end": "2026-07-26", "days": 7 },
-          { "start": "2026-08-17", "end": "2026-08-30", "days": 14 },
-          { "start": "2026-11-16", "end": "2026-11-20", "days": 5 }
-        ]
-      },
-      {
-        "name": "Глазкова Екатерина Геннадьевна",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-06-01", "end": "2026-06-14", "days": 14 },
-          { "start": "2026-09-07", "end": "2026-09-20", "days": 14 }
-        ]
-      },
-      {
-        "name": "Корних Владислав Эрнестович",
-        "position": "Главный специалист",
-        "vacations": []
-      },
-      {
-        "name": "Куличкин Евгений Владимирович",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-02-16", "end": "2026-03-01", "days": 14 },
-          { "start": "2026-08-10", "end": "2026-08-23", "days": 14 }
-        ]
-      },
-      {
-        "name": "Олейникова Анастасия Евгеньевна",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-04-06", "end": "2026-04-19", "days": 14 },
-          { "start": "2026-10-05", "end": "2026-10-18", "days": 14 }
-        ]
-      },
-      {
-        "name": "Позднякова Ирина Викторовна",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-01-19", "end": "2026-02-01", "days": 14 },
-          { "start": "2026-07-06", "end": "2026-07-19", "days": 14 }
-        ]
-      },
-      {
-        "name": "Суржиков Святослав Михайлович",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-05-18", "end": "2026-05-31", "days": 14 },
-          { "start": "2026-12-07", "end": "2026-12-20", "days": 14 }
-        ]
-      },
-      {
-        "name": "Фонарев Аркадий Андреевич",
-        "position": "Главный специалист",
-        "vacations": [
-          { "start": "2026-03-16", "end": "2026-03-29", "days": 14 },
-          { "start": "2026-11-02", "end": "2026-11-15", "days": 14 }
-        ]
-      }
-    ];
-
-    // ====== Хранилище ======
-    const LS_TASKS = "drnu_tasks_v1";
-    const LS_COUNTER = "drnu_task_counter_v1";
-    const LS_EMP = "drnu_employees_v1"; // доп. сотрудники (локально)
-
-    // ====== Утилиты ======
-    const $ = (id) => document.getElementById(id);
-    const pad2 = (n) => String(n).padStart(2, "0");
-    const toISODate = (d) => {
-      if (!d) return "";
-      const dt = new Date(d);
-      if (Number.isNaN(dt.getTime())) return "";
-      return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}`;
-    };
-    const fmtRU = (iso) => {
-      if (!iso) return "—";
-      const d = new Date(iso);
-      if (Number.isNaN(d.getTime())) return "—";
-      return d.toLocaleDateString("ru-RU");
-    };
-    const daysBetweenIncl = (aISO, bISO) => {
-      const a = new Date(aISO);
-      const b = new Date(bISO);
-      const ms = (b - a);
-      if (Number.isNaN(ms)) return 0;
-      return Math.floor(ms / 86400000) + 1; // inclusive
-    };
-    const todayISO = () => toISODate(new Date());
-    const addDaysISO = (iso, n) => {
-      const d = new Date(iso);
-      d.setDate(d.getDate() + n);
-      return toISODate(d);
-    };
-    const isOverdue = (dueISO) => {
-      if (!dueISO) return false;
-      return new Date(dueISO) < new Date(todayISO());
-    };
-    const isDueSoon = (dueISO, days=3) => {
-      if (!dueISO) return false;
-      const t = new Date(todayISO());
-      const d = new Date(dueISO);
-      const diff = Math.floor((d - t) / 86400000);
-      return diff >= 0 && diff <= days;
-    };
-    const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-    }[m]));
-
-    // ====== Сотрудники ======
-    function getEmployees() {
-      const base = VACATION_DATA.map(e => ({ name: e.name, position: e.position || "" }));
-      const extra = JSON.parse(localStorage.getItem(LS_EMP) || "[]");
-      const map = new Map();
-      for (const e of base) map.set(e.name.trim(), e);
-      for (const e of extra) {
-        const key = (e.name || "").trim();
-        if (!key) continue;
-        if (!map.has(key)) map.set(key, { name: key, position: e.position || "" });
-      }
-      return Array.from(map.values()).sort((a,b)=>a.name.localeCompare(b.name,"ru"));
-    }
-
-    // ====== Задачи ======
-    function loadTasks() { return JSON.parse(localStorage.getItem(LS_TASKS) || "[]"); }
-    function saveTasks(tasks) { localStorage.setItem(LS_TASKS, JSON.stringify(tasks)); }
-    function nextId() {
-      const cur = parseInt(localStorage.getItem(LS_COUNTER) || "0", 10);
-      const n = cur + 1;
-      localStorage.setItem(LS_COUNTER, String(n));
-      return `T-${String(n).padStart(3,"0")}`;
-    }
-
-    function renderOwnerSelects() {
-      const emps = getEmployees();
-      $("empCount").textContent = String(emps.length);
-
-      const ownerOpts = [`<option value="">Все</option>`]
-        .concat(emps.map(e => `<option value="${escapeHTML(e.name)}">${escapeHTML(e.name)}</option>`))
-        .join("");
-      $("fOwner").innerHTML = ownerOpts;
-
-      const ownerOptsNoAll = emps.map(e => `<option value="${escapeHTML(e.name)}">${escapeHTML(e.name)}</option>`).join("");
-      $("nOwner").innerHTML = ownerOptsNoAll;
-      $("mOwner").innerHTML = ownerOptsNoAll;
-    }
-
-    function renderSummary(tasks) {
-      const overdue = tasks.filter(t => t.status !== "Done" && isOverdue(t.due)).length;
-      const soon = tasks.filter(t => t.status !== "Done" && !isOverdue(t.due) && isDueSoon(t.due, 3)).length;
-      const inprog = tasks.filter(t => t.status === "In progress").length;
-      const backlog = tasks.filter(t => t.status === "Backlog").length;
-      const done = tasks.filter(t => t.status === "Done").length;
-
-      $("summaryChips").innerHTML = [
-        `<span class="chip"><span class="dot bad"></span>🔴 Просрочено: <b>${overdue}</b></span>`,
-        `<span class="chip"><span class="dot warn"></span>🟡 Горит (≤3 дня): <b>${soon}</b></span>`,
-        `<span class="chip"><span class="dot"></span>🟢 In progress: <b>${inprog}</b></span>`,
-        `<span class="chip"><span class="dot"></span>📥 Backlog: <b>${backlog}</b></span>`,
-        `<span class="chip"><span class="dot good"></span>✅ Done: <b>${done}</b></span>`
-      ].join("");
-    }
-
-    function getFilteredTasks(tasks) {
-      const q = ($("q").value || "").trim().toLowerCase();
-      const o = $("fOwner").value || "";
-      const s = $("fStatus").value || "";
-      const hot = $("onlyHot").checked;
-
-      let out = tasks.slice();
-      if (q) {
-        out = out.filter(t => `${t.id} ${t.task} ${t.owner} ${t.next}`.toLowerCase().includes(q));
-      }
-      if (o) out = out.filter(t => t.owner === o);
-      if (s) out = out.filter(t => t.status === s);
-      if (hot) out = out.filter(t => t.status !== "Done" && (isOverdue(t.due) || isDueSoon(t.due, 3)));
-
-      out.sort((a,b) => {
-        const ao = (a.status !== "Done" && isOverdue(a.due)) ? 0 : (a.status !== "Done" && isDueSoon(a.due,3) ? 1 : 2);
-        const bo = (b.status !== "Done" && isOverdue(b.due)) ? 0 : (b.status !== "Done" && isDueSoon(b.due,3) ? 1 : 2);
-        if (ao !== bo) return ao - bo;
-        const ad = a.due ? new Date(a.due).getTime() : 1e18;
-        const bd = b.due ? new Date(b.due).getTime() : 1e18;
-        if (ad !== bd) return ad - bd;
-        return a.id.localeCompare(b.id);
-      });
-      return out;
-    }
-
-    function dueBadge(task) {
-      if (task.status === "Done") return `<span class="pill good"><span class="dot good"></span>${fmtRU(task.due)}</span>`;
-      if (isOverdue(task.due)) return `<span class="pill bad"><span class="dot bad"></span>${fmtRU(task.due)}</span>`;
-      if (isDueSoon(task.due, 3)) return `<span class="pill warn"><span class="dot warn"></span>${fmtRU(task.due)}</span>`;
-      return `<span class="pill"><span class="dot"></span>${fmtRU(task.due)}</span>`;
-    }
-
-    function renderTasks() {
-      const tasks = loadTasks();
-      renderSummary(tasks);
-
-      const rows = getFilteredTasks(tasks).map(t => `
-        <tr data-id="${escapeHTML(t.id)}">
-          <td class="mono">${escapeHTML(t.id)}</td>
-          <td>${escapeHTML(t.task)}</td>
-          <td>${escapeHTML(t.owner || "—")}</td>
-          <td>${dueBadge(t)}</td>
-          <td>${escapeHTML(t.status)}</td>
-          <td>${escapeHTML(t.next || "")}</td>
-        </tr>
-      `).join("");
-
-      $("tasksBody").innerHTML = rows || `<tr><td colspan="6" class="muted">Пока нет задач. Добавьте справа.</td></tr>`;
-      for (const tr of $("tasksBody").querySelectorAll("tr[data-id]")) {
-        tr.addEventListener("click", () => openModal(tr.getAttribute("data-id")));
-      }
-    }
-
-    function addTask() {
-      const task = ($("nTask").value || "").trim();
-      const owner = $("nOwner").value || "";
-      const due = $("nDue").value || "";
-      const status = $("nStatus").value || "In progress";
-      const next = ($("nNext").value || "").trim();
-
-      if (!task) { alert("Заполните поле «Задача»"); return; }
-
-      const tasks = loadTasks();
-      tasks.push({ id: nextId(), task, owner, due, status, next });
-      saveTasks(tasks);
-
-      $("nTask").value = "";
-      $("nNext").value = "";
-      renderTasks();
-    }
-
-    // ====== Модалка ======
-    let editingId = null;
-    function openModal(id) {
-      const tasks = loadTasks();
-      const t = tasks.find(x => x.id === id);
-      if (!t) return;
-      editingId = id;
-
-      $("mId").textContent = id;
-      $("mTask").value = t.task || "";
-      $("mOwner").value = t.owner || "";
-      $("mDue").value = t.due || "";
-      $("mStatus").value = t.status || "In progress";
-      $("mNext").value = t.next || "";
-
-      $("modal").classList.add("open");
-    }
-    function closeModal() { $("modal").classList.remove("open"); editingId = null; }
-
-    function saveModal() {
-      if (!editingId) return;
-      const tasks = loadTasks();
-      const idx = tasks.findIndex(x => x.id === editingId);
-      if (idx < 0) return;
-
-      const task = ($("mTask").value || "").trim();
-      if (!task) { alert("Задача не может быть пустой"); return; }
-
-      tasks[idx] = {
-        id: editingId,
-        task,
-        owner: $("mOwner").value || "",
-        due: $("mDue").value || "",
-        status: $("mStatus").value || "In progress",
-        next: ($("mNext").value || "").trim()
-      };
-      saveTasks(tasks);
-      closeModal();
-      renderTasks();
-    }
-
-    function deleteModal() {
-      if (!editingId) return;
-      if (!confirm(`Удалить задачу ${editingId}?`)) return;
-      saveTasks(loadTasks().filter(x => x.id !== editingId));
-      closeModal();
-      renderTasks();
-    }
-    function doneModal() { if (!editingId) return; $("mStatus").value = "Done"; saveModal(); }
-
-    // ====== Экспорт/Импорт ======
-    function exportJSON() {
-      const payload = {
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        tasks: loadTasks(),
-        employeesExtra: JSON.parse(localStorage.getItem(LS_EMP) || "[]")
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `drnu-task-tracker-${toISODate(new Date())}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    function importJSON(file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const payload = JSON.parse(reader.result);
-          if (Array.isArray(payload.tasks)) saveTasks(payload.tasks);
-          if (Array.isArray(payload.employeesExtra)) localStorage.setItem(LS_EMP, JSON.stringify(payload.employeesExtra));
-          renderOwnerSelects();
-          renderTasks();
-          alert("Импорт выполнен");
-        } catch (e) {
-          alert("Не удалось импортировать JSON: " + e.message);
-        }
-      };
-      reader.readAsText(file, "utf-8");
-    }
-
-    function clearAll() {
-      if (!confirm("Сбросить задачи и добавленных сотрудников?")) return;
-      localStorage.removeItem(LS_TASKS);
-      localStorage.removeItem(LS_COUNTER);
-      localStorage.removeItem(LS_EMP);
-      renderOwnerSelects();
-      renderTasks();
-      renderVacations();
-    }
-
-    // ====== Добавление сотрудника ======
-    function addEmployee() {
-      const name = ($("empName").value || "").trim();
-      const position = ($("empPos").value || "").trim();
-      if (!name) { alert("Введите ФИО сотрудника"); return; }
-
-      const extra = JSON.parse(localStorage.getItem(LS_EMP) || "[]");
-      const exists = extra.some(e => (e.name||"").trim().toLowerCase() === name.toLowerCase())
-        || VACATION_DATA.some(e => (e.name||"").trim().toLowerCase() === name.toLowerCase());
-      if (exists) { alert("Такой сотрудник уже есть в списке"); return; }
-
-      extra.push({ name, position });
-      localStorage.setItem(LS_EMP, JSON.stringify(extra));
-
-      $("empName").value = "";
-      $("empPos").value = "";
-      renderOwnerSelects();
-      renderTasks();
-      renderVacations();
-    }
-
-    // ====== Отпуска ======
-    function getAllVacationEmployees() {
-      const extras = JSON.parse(localStorage.getItem(LS_EMP) || "[]");
-      const list = VACATION_DATA.map(e => ({ ...e }));
-      for (const ex of extras) {
-        const key = (ex.name || "").trim();
-        if (!key) continue;
-        if (!list.some(x => x.name === key)) {
-          list.push({ name: key, position: ex.position || "", vacations: [] });
-        }
-      }
-      list.sort((a,b)=>a.name.localeCompare(b.name,"ru"));
-      return list;
-    }
-
-    function yearsFromVacations() {
-      const years = new Set();
-      for (const e of VACATION_DATA) {
-        for (const v of (e.vacations || [])) {
-          if (v.start) years.add(parseInt(String(v.start).slice(0,4),10));
-          if (v.end) years.add(parseInt(String(v.end).slice(0,4),10));
-        }
-      }
-      if (years.size === 0) years.add(new Date().getFullYear());
-      return Array.from(years).sort((a,b)=>a-b);
-    }
-
-    function renderVacations() {
-      const emps = getAllVacationEmployees();
-      const years = yearsFromVacations();
-      const ySel = $("yearSel");
-      const currentY = new Date().getFullYear();
-      const prevVal = parseInt(ySel.value || "0", 10) || null;
-
-      ySel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
-      const useYear = (prevVal && years.includes(prevVal)) ? prevVal :
-                      (years.includes(currentY) ? currentY : years[0]);
-      ySel.value = String(useYear);
-
-      const year = parseInt(ySel.value, 10);
-      const yearStart = new Date(`${year}-01-01T00:00:00`);
-      const yearEnd = new Date(`${year}-12-31T00:00:00`);
-      const yearDays = Math.floor((yearEnd - yearStart) / 86400000) + 1;
-
-      $("vacInfo").textContent = `Год: ${year}. Полоски показывают интервалы отпусков по данным файла.`;
-
-      const monthNames = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
-
-      let html = `
-        <div class="tl-head">
-          <div class="left">Сотрудник</div>
-          <div class="months">
-            ${monthNames.map(m=>`<div>${m}</div>`).join("")}
+  <!-- МОДАЛКА: настройки -->
+  <div id="mSet" class="modal" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="hd">
+        <div class="h">Настройки синхронизации</div>
+        <div class="rightBtns">
+          <button id="sClose">Закрыть</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="two">
+          <div>
+            <label>Владелец репозитория (owner)</label>
+            <input id="sOwner" placeholder="например: Anatoliy031" />
+          </div>
+          <div>
+            <label>Репозиторий (repo)</label>
+            <input id="sRepo" placeholder="например: drnu-task-tracker" />
           </div>
         </div>
-      `;
 
-      emps.forEach((e, idx) => {
-        const vacs = (e.vacations || []).filter(v => (v.start || "").startsWith(String(year)) || (v.end || "").startsWith(String(year)));
-        const bars = (vacs.length ? vacs : []).map((v, j) => {
-          const s = new Date(`${v.start}T00:00:00`);
-          const en = new Date(`${v.end}T00:00:00`);
-          if (Number.isNaN(s.getTime()) || Number.isNaN(en.getTime())) return "";
-          const cs = (s < yearStart) ? yearStart : s;
-          const ce = (en > yearEnd) ? yearEnd : en;
-
-          const left = ((cs - yearStart) / 86400000) / yearDays * 100;
-          const width = (daysBetweenIncl(toISODate(cs), toISODate(ce)) / yearDays) * 100;
-          const label = `${fmtRU(v.start)} – ${fmtRU(v.end)}${v.days ? ` · ${v.days} дн.` : ""}`;
-          const cls = (j % 2 === 0) ? "bar" : "bar alt";
-          return `<div class="${cls}" style="left:${left}%; width:${Math.max(width, 0.6)}%;" title="${escapeHTML(label)}">${escapeHTML(v.days ? `${v.days} дн.` : "Отпуск")}</div>`;
-        }).join("");
-
-        html += `
-          <div class="tl-row">
-            <div class="who">
-              <div class="nm">${escapeHTML(e.name)}</div>
-              <div class="ps">${escapeHTML(e.position || "")}</div>
-            </div>
-            <div class="bars">${bars}</div>
+        <div class="two" style="margin-top:10px">
+          <div>
+            <label>Ветка</label>
+            <input id="sBranch" placeholder="main" />
           </div>
-        `;
-      });
+          <div>
+            <label>Путь к файлу задач</label>
+            <input id="sPath" placeholder="tasks.json" />
+          </div>
+        </div>
 
-      $("tl").innerHTML = html;
-      renderUpcoming();
-    }
+        <div style="margin-top:10px">
+          <label>GitHub токен (PAT) — нужен для “Сохранить”</label>
+          <input id="sToken" placeholder="ghp_... (сохранится только в вашем браузере)" />
+          <div class="hint" style="margin-top:6px">
+            Рекомендация: делайте токен с правами <b>Contents: Read and write</b> только на этот репозиторий (fine-grained token).
+          </div>
+        </div>
 
-    function renderUpcoming() {
-      const now = new Date();
-      const from = new Date(now);
-      const to = new Date(now);
-      to.setDate(to.getDate() + 60);
+        <div class="row" style="margin-top:12px">
+          <button id="sSave" class="good">Сохранить настройки</button>
+          <button id="sTest">Проверить доступ</button>
+        </div>
 
-      const items = [];
-      for (const e of getAllVacationEmployees()) {
-        for (const v of (e.vacations || [])) {
-          if (!v.start || !v.end) continue;
-          const s = new Date(`${v.start}T00:00:00`);
-          const en = new Date(`${v.end}T00:00:00`);
-          if (en < from || s > to) continue;
-          items.push({
-            name: e.name,
-            position: e.position || "",
-            start: v.start,
-            end: v.end,
-            days: v.days || daysBetweenIncl(v.start, v.end)
-          });
+        <div id="sMsg" class="hint" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ==========================
+   Конфиг / состояние
+========================== */
+const LS_CFG = "drnu_cfg_v2";
+const LS_ME  = "drnu_me_v2";
+
+const DEFAULT_CFG = { owner:"", repo:"", branch:"main", path:"tasks.json", token:"" };
+
+let CFG = loadCfg();
+let VAC = { сотрудники: [] };
+
+let STATE = {
+  tasks: [],
+  remoteSha: null,
+  lastLoadedAt: null,
+  quick: "Все", // Все | Мои | Горит | Просрочено | Готово
+};
+
+const $ = (id)=>document.getElementById(id);
+
+function loadCfg(){
+  try { return { ...DEFAULT_CFG, ...(JSON.parse(localStorage.getItem(LS_CFG)||"{}")) }; }
+  catch { return { ...DEFAULT_CFG }; }
+}
+function saveCfg(){
+  localStorage.setItem(LS_CFG, JSON.stringify(CFG));
+  $("filePathView").textContent = CFG.path || "tasks.json";
+  updateSyncUI();
+}
+
+function isoNow(){ return new Date().toISOString(); }
+function todayISO(){
+  const d=new Date(); const pad=(n)=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function addDaysISO(iso, n){
+  const d = new Date(iso+"T00:00:00");
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function escapeHTML(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[m]));}
+
+/* ==========================
+   Данные отпусков
+========================== */
+async function loadVacations(){
+  try{
+    const r = await fetch(`vacations.json?v=${Date.now()}`, { cache:"no-store" });
+    if(!r.ok) throw new Error("vacations.json не найден");
+    VAC = await r.json();
+  }catch(e){
+    VAC = { сотрудники: [] };
+  }
+}
+
+function employees(){
+  return (VAC.сотрудники || []).map(x=>x["ФИО"]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ru"));
+}
+function employeePosition(name){
+  const e = (VAC.сотрудники||[]).find(x=>x["ФИО"]===name);
+  return e ? (e["должность"]||"") : "";
+}
+function vacationsFor(name){
+  const e = (VAC.сотрудники||[]).find(x=>x["ФИО"]===name);
+  return e ? (e["отпуска"]||[]) : [];
+}
+function dateInRange(dateISO, aISO, bISO){
+  if(!dateISO || !aISO || !bISO) return false;
+  const d=new Date(dateISO+"T00:00:00");
+  const a=new Date(aISO+"T00:00:00");
+  const b=new Date(bISO+"T00:00:00");
+  return d>=a && d<=b;
+}
+function overlapsVacation(name, dateISO){
+  const v = vacationsFor(name);
+  for(const it of v){
+    if(dateInRange(dateISO, it["начало"], it["конец"])) return it;
+  }
+  return null;
+}
+function renderVacControl(){
+  const t = todayISO();
+  const soonTo = addDaysISO(t, 14);
+
+  const todayList = [];
+  const soonList = [];
+
+  for(const e of (VAC.сотрудники||[])){
+    const fio = e["ФИО"];
+    const pos = e["должность"] || "";
+    for(const v of (e["отпуска"]||[])){
+      const a=v["начало"], b=v["конец"];
+      if(dateInRange(t, a, b)){
+        todayList.push({fio,pos,a,b,days:v["дней"]});
+      }else{
+        // ближайшие 14 дней: пересечение [t; soonTo]
+        const A=new Date(a+"T00:00:00"), B=new Date(b+"T00:00:00");
+        const T=new Date(t+"T00:00:00"), S=new Date(soonTo+"T00:00:00");
+        if(B>=T && A<=S){
+          soonList.push({fio,pos,a,b,days:v["дней"]});
         }
       }
-      items.sort((a,b)=> new Date(a.start) - new Date(b.start));
-
-      if (!items.length) {
-        $("upcomingBox").innerHTML = `<div class="muted">В ближайшие 60 дней отпусков по данным графика не найдено.</div>`;
-        return;
-      }
-      const rows = items.map(it => `
-        <div class="chip">
-          <span class="dot"></span>
-          <b>${escapeHTML(it.name)}</b>
-          <span class="muted">${escapeHTML(it.position)}</span>
-          <span>—</span>
-          <span>${escapeHTML(fmtRU(it.start))} → ${escapeHTML(fmtRU(it.end))}</span>
-          <span class="muted">(${it.days} дн.)</span>
-        </div>
-      `).join("");
-      $("upcomingBox").innerHTML = `<div class="h" style="font-size:13px; font-weight:700;">Ближайшие 60 дней</div><div style="margin-top:10px;" class="chips">${rows}</div>`;
     }
+  }
 
-    // ====== Tabs ======
-    function setTab(name) {
-      for (const b of document.querySelectorAll(".tab")) {
-        b.classList.toggle("active", b.dataset.tab === name);
-      }
-      $("tab-tasks").style.display = (name === "tasks") ? "grid" : "none";
-      $("tab-vacations").style.display = (name === "vacations") ? "grid" : "none";
-      $("tab-help").style.display = (name === "help") ? "grid" : "none";
-      if (name === "vacations") renderVacations();
-      if (name === "tasks") renderTasks();
+  todayList.sort((x,y)=>x.fio.localeCompare(y.fio,"ru"));
+  soonList.sort((x,y)=>new Date(x.a)-new Date(y.a));
+
+  $("vacToday").innerHTML = todayList.length
+    ? `<div class="muted small">Сегодня в отпуске:</div>` + todayList.map(x =>
+      `<div class="vacItem"><span class="dot warn"></span><b>${escapeHTML(x.fio)}</b><span class="muted">${escapeHTML(x.pos)}</span><span class="muted">•</span><span>${x.a} → ${x.b}</span></div>`
+    ).join("")
+    : `<div class="muted small">Сегодня никто не в отпуске (по данным графика).</div>`;
+
+  $("vacSoon").innerHTML = soonList.length
+    ? `<div class="muted small">В ближайшие 14 дней:</div>` + soonList.slice(0,8).map(x =>
+      `<div class="vacItem"><span class="dot"></span><b>${escapeHTML(x.fio)}</b><span class="muted">${escapeHTML(x.pos)}</span><span class="muted">•</span><span>${x.a} → ${x.b}</span></div>`
+    ).join("") + (soonList.length>8 ? `<div class="muted small">…и ещё ${soonList.length-8}</div>` : "")
+    : `<div class="muted small">В ближайшие 14 дней отпусков не видно.</div>`;
+}
+
+/* ==========================
+   GitHub синхронизация
+========================== */
+function hasSyncConfig(){
+  return !!(CFG.owner && CFG.repo && CFG.branch && CFG.path);
+}
+function hasToken(){
+  return !!(CFG.token && CFG.token.trim().length > 10);
+}
+function updateSyncUI(){
+  const dot = $("syncDot");
+  const text = $("syncText");
+
+  if(!hasSyncConfig()){
+    dot.className="statusDot";
+    text.textContent="не настроена синхронизация";
+    $("btnSave").disabled = true;
+    return;
+  }
+  if(!hasToken()){
+    dot.className="statusDot";
+    text.textContent="режим просмотра (нет токена для сохранения)";
+    $("btnSave").disabled = true;
+    return;
+  }
+  dot.className="statusDot ok";
+  text.textContent="готово к сохранению в GitHub";
+  $("btnSave").disabled = false;
+}
+
+function ghApiUrl(){
+  return `https://api.github.com/repos/${encodeURIComponent(CFG.owner)}/${encodeURIComponent(CFG.repo)}/contents/${CFG.path}?ref=${encodeURIComponent(CFG.branch)}`;
+}
+function ghHeaders(){
+  return {
+    "Accept":"application/vnd.github+json",
+    "Authorization":`Bearer ${CFG.token}`,
+    "X-GitHub-Api-Version":"2022-11-28"
+  };
+}
+function b64utf8(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function utf8fromb64(b64){
+  return decodeURIComponent(escape(atob(b64)));
+}
+
+async function loadTasksFromPages(){
+  // общий просмотр: просто читаем tasks.json рядом с index.html
+  const path = CFG.path || "tasks.json";
+  const r = await fetch(`${path}?v=${Date.now()}`, { cache:"no-store" });
+  if(!r.ok) throw new Error(`Не могу загрузить ${path}`);
+  const j = await r.json();
+  return normalizeFile(j);
+}
+
+async function loadRemoteSha(){
+  // для сохранения нужен sha через API
+  const r = await fetch(ghApiUrl(), { headers: ghHeaders() });
+  if(!r.ok){
+    const t = await r.text();
+    throw new Error(`GitHub API (GET) ошибка: ${r.status}. ${t}`);
+  }
+  const j = await r.json();
+  const content = j.content ? utf8fromb64(j.content.replace(/\n/g,"")) : null;
+  const file = content ? normalizeFile(JSON.parse(content)) : normalizeFile({});
+  return { sha: j.sha, file };
+}
+
+async function saveToGitHub(localFile){
+  const { sha, file: remoteFile } = await loadRemoteSha();
+
+  // Мягкое слияние: по id, берём более новое по _изменено
+  const merged = mergeFiles(remoteFile, localFile);
+
+  const body = {
+    message: `Обновление задач (${new Date().toLocaleString("ru-RU")})`,
+    content: b64utf8(JSON.stringify(merged, null, 2)),
+    sha,
+    branch: CFG.branch
+  };
+
+  const r = await fetch(
+    `https://api.github.com/repos/${encodeURIComponent(CFG.owner)}/${encodeURIComponent(CFG.repo)}/contents/${CFG.path}`,
+    { method:"PUT", headers: { ...ghHeaders(), "Content-Type":"application/json" }, body: JSON.stringify(body) }
+  );
+
+  if(!r.ok){
+    const t = await r.text();
+    throw new Error(`GitHub API (PUT) ошибка: ${r.status}. ${t}`);
+  }
+  return true;
+}
+
+/* ==========================
+   Формат файла / задачи
+========================== */
+function normalizeTask(t){
+  const o = {
+    id: String(t.id || "").trim(),
+    задача: String(t["задача"] ?? "").trim(),
+    ответственный: String(t["ответственный"] ?? "").trim(),
+    срок: t["срок"] ? String(t["срок"]).slice(0,10) : "",
+    статус: (t["статус"] || "В работе"),
+    следующий_шаг: String(t["следующий_шаг"] ?? "").trim(),
+    _изменено: t["_изменено"] || isoNow()
+  };
+  if(!o.id) o.id = genId();
+  if(!["В план","В работе","Готово"].includes(o.статус)) o.статус = "В работе";
+  return o;
+}
+function normalizeFile(j){
+  const f = {
+    версия: 1,
+    обновлено: j.обновлено || isoNow(),
+    задачи: Array.isArray(j.задачи) ? j.задачи.map(normalizeTask) : []
+  };
+  return f;
+}
+function mergeFiles(remote, local){
+  const r = normalizeFile(remote);
+  const l = normalizeFile(local);
+
+  const map = new Map();
+  for(const t of r.задачи) map.set(t.id, t);
+
+  for(const t of l.задачи){
+    const prev = map.get(t.id);
+    if(!prev){
+      map.set(t.id, t);
+    }else{
+      const a = new Date(prev._изменено || "1970-01-01").getTime();
+      const b = new Date(t._изменено || "1970-01-01").getTime();
+      map.set(t.id, b >= a ? t : prev);
     }
+  }
 
-    // ====== INIT ======
-    function init() {
-      renderOwnerSelects();
-      renderTasks();
-      renderVacations();
+  const merged = {
+    версия: 1,
+    обновлено: isoNow(),
+    задачи: Array.from(map.values())
+  };
+  // сортировка: сначала просрочено/горит, потом по сроку
+  merged.задачи.sort(sortTasks);
+  return merged;
+}
 
-      $("nDue").value = addDaysISO(todayISO(), 7);
+function genId(){
+  // чтобы не конфликтовало при параллельном добавлении
+  const d = todayISO().replaceAll("-","");
+  const rnd = Math.random().toString(16).slice(2,6).toUpperCase();
+  return `T-${d}-${rnd}`;
+}
 
-      for (const b of document.querySelectorAll(".tab")) {
-        b.addEventListener("click", () => setTab(b.dataset.tab));
-      }
+/* ==========================
+   Логика сроков / сортировки
+========================== */
+function isOverdue(t){
+  if(t.статус==="Готово") return false;
+  if(!t.срок) return false;
+  return new Date(t.срок+"T00:00:00") < new Date(todayISO()+"T00:00:00");
+}
+function isSoon(t, days=3){
+  if(t.статус==="Готово") return false;
+  if(!t.срок) return false;
+  const a = new Date(todayISO()+"T00:00:00");
+  const b = new Date(t.срок+"T00:00:00");
+  const diff = Math.floor((b-a)/86400000);
+  return diff>=0 && diff<=days;
+}
+function dueBadge(t){
+  if(t.статус==="Готово") return `<span class="badge good"><span class="dot good"></span>${t.срок || "—"}</span>`;
+  if(isOverdue(t)) return `<span class="badge bad"><span class="dot bad"></span>${t.срок || "—"}</span>`;
+  if(isSoon(t,3)) return `<span class="badge warn"><span class="dot warn"></span>${t.срок || "—"}</span>`;
+  return `<span class="badge"><span class="dot"></span>${t.срок || "—"}</span>`;
+}
+function sortTasks(a,b){
+  const ao = isOverdue(a)?0 : (isSoon(a)?1:2);
+  const bo = isOverdue(b)?0 : (isSoon(b)?1:2);
+  if(ao!==bo) return ao-bo;
+  const ad = a.срок ? new Date(a.срок+"T00:00:00").getTime() : 9e15;
+  const bd = b.срок ? new Date(b.срок+"T00:00:00").getTime() : 9e15;
+  if(ad!==bd) return ad-bd;
+  return a.id.localeCompare(b.id);
+}
 
-      $("btnAdd").addEventListener("click", addTask);
-      $("btnAddDemo").addEventListener("click", () => {
-        $("nTask").value = "Подготовить проект допсоглашения по размещению ВОЛС (версия для согласования)";
-        $("nNext").value = "Согласовать с юристами и отправить контрагенту";
-        $("nStatus").value = "In progress";
-      });
+/* ==========================
+   UI: сотрудники / фильтры
+========================== */
+function renderEmployeeSelects(){
+  const list = employees();
+  const optsAll = [`<option value="">Все</option>`].concat(list.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`)).join("");
+  const opts = list.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join("");
 
-      $("nTask").addEventListener("keydown", (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") addTask();
-      });
+  $("fOwner").innerHTML = optsAll;
+  $("nOwner").innerHTML = opts;
+  $("mOwner").innerHTML = opts;
 
-      $("q").addEventListener("input", renderTasks);
-      $("fOwner").addEventListener("change", renderTasks);
-      $("fStatus").addEventListener("change", renderTasks);
-      $("onlyHot").addEventListener("change", renderTasks);
+  // "Я"
+  const meOpts = [`<option value="">— выбрать —</option>`].concat(list.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`)).join("");
+  $("meSel").innerHTML = meOpts;
 
-      $("btnExport").addEventListener("click", exportJSON);
-      $("btnImport").addEventListener("click", () => $("importFile").click());
-      $("importFile").addEventListener("change", (e) => {
-        const f = e.target.files?.[0];
-        if (f) importJSON(f);
-        e.target.value = "";
-      });
-      $("btnClear").addEventListener("click", clearAll);
+  const savedMe = localStorage.getItem(LS_ME) || "";
+  if(savedMe && list.includes(savedMe)) $("meSel").value = savedMe;
+}
 
-      $("btnAddEmp").addEventListener("click", addEmployee);
+function setQuick(name){
+  STATE.quick = name;
+  renderQuick();
+  renderTable();
+}
+function renderQuick(){
+  const items = ["Все","Мои","Горит","Просрочено","Готово"];
+  $("quickFilters").innerHTML = items.map(x =>
+    `<button class="qbtn ${x===STATE.quick?"active":""}" data-q="${escapeHTML(x)}">${escapeHTML(x)}</button>`
+  ).join("");
+  for(const b of $("quickFilters").querySelectorAll("button[data-q]")){
+    b.addEventListener("click", ()=>setQuick(b.getAttribute("data-q")));
+  }
+}
 
-      $("mClose").addEventListener("click", closeModal);
-      $("mSave").addEventListener("click", saveModal);
-      $("mDel").addEventListener("click", deleteModal);
-      $("mDone").addEventListener("click", doneModal);
-      $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
-      document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+function filteredTasks(){
+  const q = ($("q").value||"").trim().toLowerCase();
+  const owner = $("fOwner").value || "";
+  const status = $("fStatus").value || "";
+  const me = $("meSel").value || "";
 
-      $("yearSel").addEventListener("change", renderVacations);
-      $("btnUpcoming").addEventListener("click", () => {
-        $("upcomingBox").scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+  let arr = (STATE.tasks||[]).slice();
 
-      const baseCount = VACATION_DATA.length;
-      if (baseCount < 10) {
-        $("subtitle").textContent = `Локальное хранение в браузере. В графике отпусков найдено ${baseCount} сотрудников — можно добавить недостающих вручную.`;
-      }
+  // quick
+  if(STATE.quick==="Мои" && me) arr = arr.filter(t=>t.ответственный===me);
+  if(STATE.quick==="Горит") arr = arr.filter(t=>isOverdue(t) || isSoon(t,3));
+  if(STATE.quick==="Просрочено") arr = arr.filter(t=>isOverdue(t));
+  if(STATE.quick==="Готово") arr = arr.filter(t=>t.статус==="Готово");
+
+  if(owner) arr = arr.filter(t=>t.ответственный===owner);
+  if(status) arr = arr.filter(t=>t.статус===status);
+
+  if(q){
+    arr = arr.filter(t => (`${t.id} ${t.задача} ${t.ответственный} ${t.следующий_шаг}`.toLowerCase().includes(q)));
+  }
+
+  arr.sort(sortTasks);
+  return arr;
+}
+
+function renderKPI(){
+  const all = STATE.tasks || [];
+  const overdue = all.filter(t=>isOverdue(t)).length;
+  const soon = all.filter(t=>!isOverdue(t) && isSoon(t,3)).length;
+  const inwork = all.filter(t=>t.статус==="В работе").length;
+  const plan = all.filter(t=>t.статус==="В план").length;
+  const done = all.filter(t=>t.статус==="Готово").length;
+
+  $("kpi").innerHTML = [
+    `<span class="chip"><span class="dot bad"></span>🔴 Просрочено: <b>${overdue}</b></span>`,
+    `<span class="chip"><span class="dot warn"></span>🟡 ≤ 3 дня: <b>${soon}</b></span>`,
+    `<span class="chip"><span class="dot"></span>🟢 В работе: <b>${inwork}</b></span>`,
+    `<span class="chip"><span class="dot"></span>📌 В план: <b>${plan}</b></span>`,
+    `<span class="chip"><span class="dot good"></span>✅ Готово: <b>${done}</b></span>`
+  ].join("");
+}
+
+function renderTable(){
+  renderKPI();
+  const arr = filteredTasks();
+  $("tb").innerHTML = arr.length ? arr.map(t=>{
+    const vac = (t.ответственный && t.срок) ? overlapsVacation(t.ответственный, t.срок) : null;
+    const vacMark = vac ? ` <span class="muted" title="Ответственный в отпуске на дату срока">🏖️</span>` : "";
+    return `
+      <tr data-id="${escapeHTML(t.id)}">
+        <td class="mono">${escapeHTML(t.id)}</td>
+        <td>${escapeHTML(t.задача)}</td>
+        <td>${escapeHTML(t.ответственный || "—")}${vacMark}</td>
+        <td>${dueBadge(t)}</td>
+        <td>${escapeHTML(t.статус)}</td>
+        <td>${escapeHTML(t.следующий_шаг || "")}</td>
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="6" class="muted">Нет задач по выбранным фильтрам.</td></tr>`;
+
+  for(const tr of $("tb").querySelectorAll("tr[data-id]")){
+    tr.addEventListener("click", ()=>openEdit(tr.getAttribute("data-id")));
+  }
+}
+
+/* ==========================
+   Добавление / редактирование
+========================== */
+function warnFor(owner, dueISO, el){
+  if(!owner || !dueISO){ el.style.display="none"; el.textContent=""; return; }
+  const v = overlapsVacation(owner, dueISO);
+  if(!v){ el.style.display="none"; el.textContent=""; return; }
+  el.style.display="block";
+  el.textContent = `⚠️ ${owner} в отпуске ${v["начало"]} → ${v["конец"]}. Подумайте о сроке/замене.`;
+}
+
+function addTask(){
+  const task = ($("nTask").value||"").trim();
+  const owner = $("nOwner").value || "";
+  const due = $("nDue").value || "";
+  const status = $("nStatus").value || "В работе";
+  const next = ($("nNext").value||"").trim();
+
+  if(!task){ alert("Заполните поле «Задача»."); return; }
+
+  const t = normalizeTask({
+    id: genId(),
+    задача: task,
+    ответственный: owner,
+    срок: due,
+    статус: status,
+    следующий_шаг: next,
+    _изменено: isoNow()
+  });
+
+  STATE.tasks.push(t);
+  STATE.tasks.sort(sortTasks);
+
+  // очистка
+  $("nTask").value = "";
+  $("nNext").value = "";
+  $("nStatus").value = "В работе";
+  $("nWarn").style.display="none";
+
+  renderTable();
+}
+
+let EDIT_ID = null;
+
+function openEdit(id){
+  const t = (STATE.tasks||[]).find(x=>x.id===id);
+  if(!t) return;
+
+  EDIT_ID = id;
+  $("mId").textContent = id;
+  $("mTask").value = t.задача || "";
+  $("mOwner").value = t.ответственный || "";
+  $("mDue").value = t.срок || "";
+  $("mStatus").value = t.статус || "В работе";
+  $("mNext").value = t.следующий_шаг || "";
+
+  warnFor($("mOwner").value, $("mDue").value, $("mWarn"));
+  $("mEdit").classList.add("open");
+}
+function closeEdit(){
+  $("mEdit").classList.remove("open");
+  EDIT_ID = null;
+}
+function saveEdit(){
+  if(!EDIT_ID) return;
+  const idx = STATE.tasks.findIndex(x=>x.id===EDIT_ID);
+  if(idx<0) return;
+
+  const task = ($("mTask").value||"").trim();
+  if(!task){ alert("Задача не может быть пустой."); return; }
+
+  STATE.tasks[idx] = normalizeTask({
+    id: EDIT_ID,
+    задача: task,
+    ответственный: $("mOwner").value || "",
+    срок: $("mDue").value || "",
+    статус: $("mStatus").value || "В работе",
+    следующий_шаг: ($("mNext").value||"").trim(),
+    _изменено: isoNow()
+  });
+
+  STATE.tasks.sort(sortTasks);
+  closeEdit();
+  renderTable();
+}
+function doneEdit(){
+  $("mStatus").value="Готово";
+  saveEdit();
+}
+function deleteEdit(){
+  if(!EDIT_ID) return;
+  if(!confirm(`Удалить задачу ${EDIT_ID}?`)) return;
+  STATE.tasks = STATE.tasks.filter(x=>x.id!==EDIT_ID);
+  closeEdit();
+  renderTable();
+}
+
+/* ==========================
+   Сводка
+========================== */
+async function copySummary(){
+  const all = (STATE.tasks||[]).slice().sort(sortTasks);
+  const t = todayISO();
+
+  const overdue = all.filter(x=>isOverdue(x));
+  const soon = all.filter(x=>!isOverdue(x) && isSoon(x,3));
+  const inwork = all.filter(x=>x.статус==="В работе");
+
+  const todayVac = [];
+  for(const e of (VAC.сотрудники||[])){
+    for(const v of (e.отпуска||[])){
+      if(dateInRange(t, v.начало, v.конец)) todayVac.push(`${e["ФИО"]} (${v.начало}→${v.конец})`);
     }
+  }
 
-    init();
-  </script>
+  function lines(arr){
+    return arr.map(x=>`- ${x.id} — ${x.задача} / ${x.ответственный || "—"} / срок ${x.срок || "—"} / шаг: ${x.следующий_шаг || "—"}`).join("\n");
+  }
+
+  const text =
+`Сводка ДРНУ на ${new Date().toLocaleDateString("ru-RU")}
+
+🔴 Просрочено (${overdue.length})
+${overdue.length?lines(overdue):"- нет"}
+
+🟡 Горит (≤3 дня) (${soon.length})
+${soon.length?lines(soon):"- нет"}
+
+🟢 В работе (${inwork.length})
+${inwork.length?lines(inwork.slice(0,20)):( "- нет")}${inwork.length>20?`\n…и ещё ${inwork.length-20}`:""}
+
+🏖️ Сегодня в отпуске
+${todayVac.length?todayVac.map(x=>`- ${x}`).join("\n"):"- нет (по данным графика)"}
+`;
+
+  try{
+    await navigator.clipboard.writeText(text);
+    alert("Сводка скопирована в буфер обмена.");
+  }catch{
+    prompt("Скопируйте сводку вручную:", text);
+  }
+}
+
+/* ==========================
+   Загрузка / сохранение
+========================== */
+async function loadAll(){
+  try{
+    // читаем общий tasks.json (через Pages)
+    const file = await loadTasksFromPages();
+    STATE.tasks = (file.задачи||[]).map(normalizeTask).sort(sortTasks);
+    STATE.lastLoadedAt = isoNow();
+
+    renderTable();
+    updateSyncUI();
+  }catch(e){
+    alert(String(e.message || e));
+  }
+}
+
+async function saveAll(){
+  if(!hasSyncConfig() || !hasToken()){
+    alert("Чтобы сохранять, настройте owner/repo/branch/path и токен в «Настройках».");
+    return;
+  }
+  try{
+    const localFile = normalizeFile({ задачи: STATE.tasks, обновлено: isoNow() });
+    await saveToGitHub(localFile);
+    alert("Сохранено в GitHub ✅\nЕсли у кого-то открыта старая версия — нажмите «Загрузить».");
+  }catch(e){
+    alert(String(e.message || e));
+  }
+}
+
+/* ==========================
+   Настройки
+========================== */
+function openSettings(){
+  $("sOwner").value = CFG.owner || "";
+  $("sRepo").value = CFG.repo || "";
+  $("sBranch").value = CFG.branch || "main";
+  $("sPath").value = CFG.path || "tasks.json";
+  $("sToken").value = CFG.token || "";
+  $("sMsg").textContent = "";
+  $("mSet").classList.add("open");
+}
+function closeSettings(){ $("mSet").classList.remove("open"); }
+function saveSettings(){
+  CFG.owner = ($("sOwner").value||"").trim();
+  CFG.repo  = ($("sRepo").value||"").trim();
+  CFG.branch= ($("sBranch").value||"main").trim() || "main";
+  CFG.path  = ($("sPath").value||"tasks.json").trim() || "tasks.json";
+  CFG.token = ($("sToken").value||"").trim();
+  saveCfg();
+  $("sMsg").textContent = "Сохранено. Теперь «Загрузить» читает общий файл, а «Сохранить» — пишет в репозиторий (если токен валиден).";
+}
+async function testSettings(){
+  try{
+    if(!hasSyncConfig() || !hasToken()) throw new Error("Заполните owner/repo/branch/path и токен.");
+    await loadRemoteSha();
+    $("sMsg").innerHTML = `<span style="color:var(--good)">Доступ есть ✅ Можно сохранять.</span>`;
+  }catch(e){
+    $("sMsg").innerHTML = `<span style="color:var(--bad)">Ошибка: ${escapeHTML(String(e.message||e))}</span>`;
+  }
+}
+
+/* ==========================
+   Инициализация
+========================== */
+async function init(){
+  $("filePathView").textContent = CFG.path || "tasks.json";
+
+  await loadVacations();
+  renderEmployeeSelects();
+  renderQuick();
+  renderVacControl();
+
+  // defaults for new
+  $("nDue").value = addDaysISO(todayISO(), 7);
+
+  // если выбрано "Я", подставим как ответственного в форме
+  const me = localStorage.getItem(LS_ME) || "";
+  if(me && employees().includes(me)) $("nOwner").value = me;
+
+  // hooks
+  $("btnLoad").addEventListener("click", loadAll);
+  $("btnSave").addEventListener("click", saveAll);
+  $("btnSummary").addEventListener("click", copySummary);
+  $("btnSettings").addEventListener("click", openSettings);
+
+  $("btnAdd").addEventListener("click", addTask);
+  $("btnClearNew").addEventListener("click", ()=>{
+    $("nTask").value=""; $("nNext").value=""; $("nWarn").style.display="none";
+  });
+  $("btnNew").addEventListener("click", ()=>{ $("nTask").focus(); });
+
+  $("q").addEventListener("input", renderTable);
+  $("fOwner").addEventListener("change", renderTable);
+  $("fStatus").addEventListener("change", renderTable);
+
+  $("meSel").addEventListener("change", ()=>{
+    const v = $("meSel").value || "";
+    if(v) localStorage.setItem(LS_ME, v);
+    $("nOwner").value = v || $("nOwner").value;
+    renderTable();
+  });
+
+  $("nOwner").addEventListener("change", ()=>warnFor($("nOwner").value, $("nDue").value, $("nWarn")));
+  $("nDue").addEventListener("change", ()=>warnFor($("nOwner").value, $("nDue").value, $("nWarn")));
+
+  // modal edit
+  $("mClose").addEventListener("click", closeEdit);
+  $("mSave").addEventListener("click", saveEdit);
+  $("mDone").addEventListener("click", doneEdit);
+  $("mDel").addEventListener("click", deleteEdit);
+  $("mOwner").addEventListener("change", ()=>warnFor($("mOwner").value, $("mDue").value, $("mWarn")));
+  $("mDue").addEventListener("change", ()=>warnFor($("mOwner").value, $("mDue").value, $("mWarn")));
+  $("mEdit").addEventListener("click", (e)=>{ if(e.target===$("mEdit")) closeEdit(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape"){ closeEdit(); closeSettings(); } });
+
+  // settings modal
+  $("sClose").addEventListener("click", closeSettings);
+  $("sSave").addEventListener("click", saveSettings);
+  $("sTest").addEventListener("click", testSettings);
+  $("mSet").addEventListener("click", (e)=>{ if(e.target===$("mSet")) closeSettings(); });
+
+  updateSyncUI();
+
+  // первая загрузка
+  await loadAll();
+}
+init();
+</script>
 </body>
 </html>
