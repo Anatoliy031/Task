@@ -2,1188 +2,1095 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TaskOps — контроль задач (GitHub Pages)</title>
-  <meta name="theme-color" content="#0b1220" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task-трекер — ДРНУ (Кубаньэнерго)</title>
   <style>
-    :root{
-      --bg:#0b1220;
-      --panel:#101a2e;
-      --panel2:#0f1a33;
-      --card:#0f203f;
-      --text:#e9f0ff;
-      --muted:#a9b6d3;
-      --line:rgba(255,255,255,.10);
-      --good:#30d158;
-      --warn:#ffd60a;
-      --bad:#ff453a;
-      --accent:#4da3ff;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --radius:14px;
-      --radius2:18px;
+    :root {
+      --bg: #0b1220;
+      --card: #111b2e;
+      --card2: #0f172a;
+      --text: #e6eefc;
+      --muted: #a8b3c7;
+      --line: rgba(255,255,255,.10);
+      --good: #4ade80;
+      --warn: #fbbf24;
+      --bad:  #fb7185;
+      --info: #60a5fa;
+      --chip: rgba(255,255,255,.08);
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --r: 16px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0; background: radial-gradient(1200px 700px at 30% -10%, rgba(77,163,255,.25), transparent 60%),
-                         radial-gradient(900px 700px at 90% 10%, rgba(48,209,88,.18), transparent 60%),
-                         var(--bg);
-      color:var(--text); font-family:var(--sans);
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 700px at 15% 10%, rgba(96,165,250,.18), transparent 55%),
+                  radial-gradient(1000px 700px at 85% 0%, rgba(74,222,128,.12), transparent 50%),
+                  var(--bg);
+      color: var(--text);
     }
-    a{color:var(--accent); text-decoration:none}
-    .wrap{max-width:1200px; margin:0 auto; padding:18px 14px 40px;}
-    header{
-      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
-      position:sticky; top:0; z-index:20;
-      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.60));
+    a { color: inherit; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 18px; }
+    .topbar {
+      display: flex; gap: 12px; align-items: center; justify-content: space-between;
+      padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r);
+      background: rgba(17,27,46,.75); backdrop-filter: blur(10px); box-shadow: var(--shadow);
+      position: sticky; top: 10px; z-index: 20;
+    }
+    .title { display:flex; flex-direction:column; gap:4px; }
+    .title h1 { margin:0; font-size: 16px; letter-spacing: .2px; }
+    .title div { color: var(--muted); font-size: 12px; }
+    .tabs { display:flex; gap: 8px; align-items:center; flex-wrap: wrap; }
+    .tab {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tab.active { background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.45); }
+    .grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .topbar { position: static; }
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: rgba(17,27,46,.65);
       backdrop-filter: blur(10px);
-      padding:14px 10px; margin:-18px -14px 18px;
-      border-bottom:1px solid var(--line);
-    }
-    .brand{display:flex; gap:10px; align-items:center}
-    .logo{
-      width:40px;height:40px;border-radius:12px;
-      background: linear-gradient(135deg, rgba(77,163,255,.95), rgba(48,209,88,.75));
       box-shadow: var(--shadow);
+      overflow: hidden;
     }
-    .title h1{font-size:16px;margin:0}
-    .title p{margin:2px 0 0; color:var(--muted); font-size:12px}
-    .actions{display:flex; gap:8px; flex-wrap:wrap}
-    button, .btn{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      color:var(--text);
-      padding:9px 10px;
-      border-radius:12px;
-      font-size:13px;
-      cursor:pointer;
-      transition:.15s;
-      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+    .card .hd {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
     }
-    button:hover{transform: translateY(-1px); border-color: rgba(77,163,255,.35)}
-    button.primary{background: rgba(77,163,255,.18); border-color: rgba(77,163,255,.35)}
-    button.good{background: rgba(48,209,88,.16); border-color: rgba(48,209,88,.30)}
-    button.bad{background: rgba(255,69,58,.14); border-color: rgba(255,69,58,.30)}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:999px; border:1px solid var(--line);
-      background: rgba(255,255,255,.05); color:var(--muted); font-size:12px;
+    .card .hd .h {
+      font-size: 13px; font-weight: 700;
+      display:flex; align-items:center; gap:10px;
     }
-    .grid{display:grid; gap:14px; grid-template-columns: 1.35fr .65fr}
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
-    .panel{
-      background: linear-gradient(180deg, rgba(16,26,46,.85), rgba(16,26,46,.55));
-      border:1px solid var(--line);
-      border-radius: var(--radius2);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .panel .hd{
-      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      padding:12px 12px;
-      border-bottom:1px solid var(--line);
-      background: rgba(255,255,255,.03);
-    }
-    .panel .hd .left{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-    .panel .hd h2{margin:0; font-size:14px}
-    .panel .bd{padding:12px}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap}
-    .tab{padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--muted)}
-    .tab.active{color:var(--text); border-color: rgba(77,163,255,.38); background: rgba(77,163,255,.12)}
-    .kpis{display:grid; gap:10px; grid-template-columns: repeat(4,1fr)}
-    @media (max-width: 980px){ .kpis{grid-template-columns: repeat(2,1fr)} }
-    .kpi{
-      background: rgba(255,255,255,.03);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      padding:10px;
-    }
-    .kpi .n{font-family:var(--mono); font-size:18px}
-    .kpi .l{color:var(--muted); font-size:12px; margin-top:2px}
-    .kpi .b{height:6px; border-radius:999px; background: rgba(255,255,255,.08); margin-top:8px; overflow:hidden}
-    .kpi .b > i{display:block; height:100%; width:20%; background: rgba(77,163,255,.8)}
-    .split{display:grid; grid-template-columns: 1fr; gap:12px}
-    .filters{display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px}
-    @media (max-width: 700px){ .filters{grid-template-columns:1fr} }
-    input, select, textarea{
-      width:100%;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
-      border-radius: 12px;
-      padding:10px;
-      font-size:13px;
-      outline:none;
-    }
-    textarea{min-height:88px; resize:vertical}
-    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px 2px}
-    .form{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
-    .form .full{grid-column:1 / -1}
-    .mini{font-size:12px;color:var(--muted)}
-    .divider{height:1px;background:var(--line); margin:10px 0}
-    .board{display:grid; gap:12px; grid-template-columns: repeat(3,1fr)}
-    @media (max-width: 980px){ .board{grid-template-columns:1fr} }
-    .col{
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.03);
-      overflow:hidden;
-      min-height: 260px;
-    }
-    .col .ch{
-      display:flex; justify-content:space-between; align-items:center; gap:8px;
-      padding:10px;
-      border-bottom:1px solid var(--line);
-      background: rgba(255,255,255,.03);
-    }
-    .col .ch .name{font-size:13px}
-    .col .ch .count{font-family:var(--mono); color:var(--muted); font-size:12px}
-    .dropzone{padding:10px; display:grid; gap:10px}
-    .card{
-      background: linear-gradient(180deg, rgba(15,32,63,.88), rgba(15,32,63,.55));
-      border:1px solid rgba(255,255,255,.12);
-      border-radius: 14px;
-      padding:10px;
-      cursor:grab;
-      box-shadow: 0 10px 18px rgba(0,0,0,.20);
-      position:relative;
-    }
-    .card:active{cursor:grabbing}
-    .card .t{font-size:13px; margin:0 0 6px}
-    .meta{display:flex; gap:8px; flex-wrap:wrap; color:var(--muted); font-size:11px}
-    .tag{border:1px solid var(--line); background:rgba(255,255,255,.04); padding:4px 8px; border-radius:999px}
-    .prio{font-weight:600}
-    .prio.p1{color:var(--bad)}
-    .prio.p2{color:var(--warn)}
-    .prio.p3{color:var(--good)}
-    .badge{
-      position:absolute; top:10px; right:10px;
-      border-radius:999px; padding:4px 8px;
-      font-size:11px; border:1px solid var(--line);
-      background: rgba(255,255,255,.05);
-      color: var(--muted);
-    }
-    .badge.overdue{border-color: rgba(255,69,58,.35); background: rgba(255,69,58,.12); color: #ffd0cc}
-    .badge.soon{border-color: rgba(255,214,10,.35); background: rgba(255,214,10,.12); color: #fff3b3}
-    .list{display:grid; gap:10px}
-    .row{
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.03);
-      padding:10px;
-      display:grid;
-      grid-template-columns: 1.2fr .6fr .6fr .6fr .6fr;
-      gap:10px;
+    .card .bd { padding: 14px; }
+    .muted { color: var(--muted); }
+    .chips { display:flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      background: var(--chip);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      display:flex;
       align-items:center;
+      gap: 8px;
+      white-space: nowrap;
     }
-    @media (max-width: 980px){
-      .row{grid-template-columns: 1fr; gap:6px}
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--info); }
+    .dot.good { background: var(--good); }
+    .dot.warn { background: var(--warn); }
+    .dot.bad { background: var(--bad); }
+
+    label { display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      background: rgba(15,23,42,.75);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 10px;
+      outline: none;
+      font-size: 13px;
     }
-    .row .rtitle{font-size:13px}
-    .row .rsub{font-size:12px; color:var(--muted)}
-    .row .rcell{font-size:12px; color:var(--muted)}
-    .row .rbtns{display:flex; gap:8px; flex-wrap:wrap}
-    .ghost{opacity:.55}
-    .hint{font-size:12px; color:var(--muted); line-height:1.35}
-    .log{
-      font-family: var(--mono);
-      font-size: 11px;
-      white-space: pre-wrap;
-      background: rgba(0,0,0,.22);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      padding:10px;
-      max-height: 220px;
-      overflow:auto;
+    textarea { min-height: 78px; resize: vertical; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 640px) {
+      .row { grid-template-columns: 1fr; }
     }
-    .small{font-size:11px;color:var(--muted)}
-    .toast{
-      position:fixed; left:14px; right:14px; bottom:14px;
-      background: rgba(16,26,46,.92);
-      border:1px solid var(--line);
-      border-radius: 16px;
-      padding:10px 12px;
-      display:none;
-      box-shadow: var(--shadow);
+    .btns { display:flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      cursor: pointer;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+    button.primary { background: rgba(96,165,250,.20); border-color: rgba(96,165,250,.55); }
+    button.danger { background: rgba(251,113,133,.16); border-color: rgba(251,113,133,.45); }
+    button.good { background: rgba(74,222,128,.14); border-color: rgba(74,222,128,.40); }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+
+    .table-wrap { overflow:auto; border-radius: 14px; border:1px solid var(--line); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      background: rgba(15,23,42,.55);
+    }
+    th, td {
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      vertical-align: top;
+      font-size: 13px;
+    }
+    th {
+      position: sticky; top: 0;
+      background: rgba(15,23,42,.95);
+      text-align: left;
+      color: var(--muted);
+      font-weight: 600;
+      z-index: 5;
+    }
+    tr:hover td { background: rgba(255,255,255,.03); }
+    .mono { font-family: var(--mono); font-size: 12px; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pill.bad { border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.12); }
+    .pill.warn { border-color: rgba(251,191,36,.45); background: rgba(251,191,36,.10); }
+    .pill.good { border-color: rgba(74,222,128,.45); background: rgba(74,222,128,.10); }
+
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      display: none; align-items:center; justify-content:center; padding: 16px;
       z-index: 50;
     }
-    .toast.show{display:block}
+    .modal.open { display:flex; }
+    .modal .box {
+      width: min(720px, 100%);
+      background: rgba(17,27,46,.90);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal .box .hd {
+      padding: 12px 14px; border-bottom: 1px solid var(--line);
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
+    .modal .box .bd { padding: 14px; }
+
+    .timeline {
+      border:1px solid var(--line);
+      border-radius: 14px;
+      overflow: auto;
+      background: rgba(15,23,42,.55);
+    }
+    .tl { min-width: 980px; }
+    .tl-head {
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      position: sticky; top: 0;
+      background: rgba(15,23,42,.95);
+      z-index: 5;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .tl-head .left {
+      padding: 10px; color: var(--muted); font-size: 12px; font-weight: 600;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .months { display:grid; grid-template-columns: repeat(12, 1fr); }
+    .months div {
+      padding: 10px 6px;
+      border-left: 1px solid rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .tl-row {
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .tl-row .who {
+      padding: 10px;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .who .nm { font-size: 13px; font-weight: 650; }
+    .who .ps { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .bars {
+      position: relative;
+      height: 54px;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: calc(100%/12) 100%;
+    }
+    .bar {
+      position:absolute; top: 14px; height: 26px;
+      border-radius: 999px;
+      border: 1px solid rgba(96,165,250,.55);
+      background: rgba(96,165,250,.18);
+      display:flex; align-items:center; justify-content:center;
+      padding: 0 10px;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar.alt {
+      border-color: rgba(74,222,128,.50);
+      background: rgba(74,222,128,.12);
+    }
+    .legend {
+      display:flex; gap: 10px; flex-wrap: wrap; align-items:center;
+      font-size: 12px; color: var(--muted);
+    }
+    .sep { height: 1px; background: var(--line); margin: 12px 0; }
+    .small { font-size: 12px; }
+    .kbd {
+      font-family: var(--mono);
+      border:1px solid var(--line);
+      border-bottom-color: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.04);
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div class="title">
-          <h1>TaskOps — автоматизация задач и контроль выполнения</h1>
-          <p>Оффлайн-режим (LocalStorage) • без серверов • идеально для GitHub Pages</p>
-        </div>
+    <div class="topbar">
+      <div class="title">
+        <h1>Task-трекер (6 полей) — ДРНУ, Филиал ПАО «Россети Юг» — «Кубаньэнерго»</h1>
+        <div id="subtitle" class="muted">Локальное хранение в браузере (localStorage). Работает на GitHub Pages.</div>
       </div>
-
-      <div class="actions">
-        <span class="pill" id="nowPill">—</span>
-        <button class="primary" id="btnNew">+ Новая задача</button>
-        <button id="btnNotify">🔔 Уведомления</button>
-        <button id="btnExport">⬇️ Экспорт</button>
-        <button id="btnImport">⬆️ Импорт</button>
-        <button class="bad" id="btnReset">Сброс</button>
+      <div class="tabs">
+        <button class="tab active" data-tab="tasks">Задачи</button>
+        <button class="tab" data-tab="vacations">Отпуска</button>
+        <button class="tab" data-tab="help">Помощь</button>
       </div>
-    </header>
-
-    <div class="grid">
-      <!-- MAIN -->
-      <section class="panel">
-        <div class="hd">
-          <div class="left">
-            <h2>Рабочее пространство</h2>
-            <div class="tabs">
-              <button class="tab active" data-tab="board">Канбан</button>
-              <button class="tab" data-tab="list">Список</button>
-              <button class="tab" data-tab="analytics">Контроль</button>
-            </div>
-          </div>
-
-          <div class="left" style="gap:8px">
-            <span class="pill">Автопроцессы: <b id="autoState">вкл</b></span>
-            <button class="good" id="btnRunAutomation">▶ Прогнать автоматику</button>
-          </div>
-        </div>
-
-        <div class="bd">
-          <!-- Filters -->
-          <div class="filters" style="margin-bottom:12px">
-            <div>
-              <label>Поиск</label>
-              <input id="q" placeholder="текст, тег, ответственный…" />
-            </div>
-            <div>
-              <label>Статус</label>
-              <select id="fStatus">
-                <option value="">Все</option>
-                <option value="todo">К выполнению</option>
-                <option value="doing">В работе</option>
-                <option value="done">Готово</option>
-              </select>
-            </div>
-            <div>
-              <label>Показ</label>
-              <select id="fShow">
-                <option value="all">Все задачи</option>
-                <option value="overdue">Только просроченные</option>
-                <option value="today">Срок сегодня</option>
-                <option value="week">Срок в ближайшие 7 дней</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- TAB: BOARD -->
-          <div id="tab-board">
-            <div class="board">
-              <div class="col" data-status="todo">
-                <div class="ch">
-                  <div class="name">К выполнению</div>
-                  <div class="count" id="c_todo">0</div>
-                </div>
-                <div class="dropzone" id="dz_todo"></div>
-              </div>
-
-              <div class="col" data-status="doing">
-                <div class="ch">
-                  <div class="name">В работе</div>
-                  <div class="count" id="c_doing">0</div>
-                </div>
-                <div class="dropzone" id="dz_doing"></div>
-              </div>
-
-              <div class="col" data-status="done">
-                <div class="ch">
-                  <div class="name">Готово</div>
-                  <div class="count" id="c_done">0</div>
-                </div>
-                <div class="dropzone" id="dz_done"></div>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-            <div class="hint">
-              <b>Как работает “автоматика”:</b>
-              <ul style="margin:8px 0 0 18px; padding:0; color:var(--muted)">
-                <li>Подсвечивает просрочку / “скоро срок”.</li>
-                <li>Создаёт следующие повторяющиеся задачи (ежедневно/еженедельно/ежемесячно) после закрытия текущей.</li>
-                <li>Ведёт журнал действий (аудит).</li>
-                <li>Может отправлять браузерные уведомления (если разрешите).</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- TAB: LIST -->
-          <div id="tab-list" style="display:none">
-            <div class="list" id="list"></div>
-          </div>
-
-          <!-- TAB: ANALYTICS -->
-          <div id="tab-analytics" style="display:none">
-            <div class="kpis">
-              <div class="kpi">
-                <div class="n" id="k_all">0</div>
-                <div class="l">Всего задач</div>
-                <div class="b"><i id="b_all"></i></div>
-              </div>
-              <div class="kpi">
-                <div class="n" id="k_done">0</div>
-                <div class="l">Готово</div>
-                <div class="b"><i id="b_done"></i></div>
-              </div>
-              <div class="kpi">
-                <div class="n" id="k_overdue">0</div>
-                <div class="l">Просрочено</div>
-                <div class="b"><i id="b_overdue"></i></div>
-              </div>
-              <div class="kpi">
-                <div class="n" id="k_due7">0</div>
-                <div class="l">Срок ≤ 7 дней</div>
-                <div class="b"><i id="b_due7"></i></div>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="split">
-              <div>
-                <h3 style="margin:0 0 8px; font-size:13px">Журнал контроля (audit log)</h3>
-                <div class="log" id="log"></div>
-                <div class="small" style="margin-top:8px">
-                  Совет: экспортируйте JSON раз в неделю как бэкап. Это удобно, если сайт крутится на GitHub Pages и нужно переносить данные между устройствами.
-                </div>
-              </div>
-
-              <div>
-                <h3 style="margin:0 0 8px; font-size:13px">Регламент контроля (шаблон)</h3>
-                <div class="hint">
-                  <ul style="margin:8px 0 0 18px; padding:0; color:var(--muted)">
-                    <li><b>Ежедневно</b>: фильтр “Срок сегодня” → закрыть/перепланировать.</li>
-                    <li><b>Каждый понедельник</b>: фильтр “≤ 7 дней” → назначить ответственных и приоритет.</li>
-                    <li><b>Контроль просрочки</b>: “Только просроченные” → обязательный комментарий причины и новая дата.</li>
-                    <li><b>Автоповторы</b>: используйте “Повтор” для рутинных задач (отчёты, проверки, оплаты).</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- SIDE -->
-      <aside class="panel" id="sidePanel">
-        <div class="hd">
-          <div class="left">
-            <h2 id="formTitle">Новая задача</h2>
-          </div>
-          <div class="left">
-            <button id="btnCloseForm">✕</button>
-          </div>
-        </div>
-
-        <div class="bd">
-          <div class="form">
-            <div class="full">
-              <label>Название</label>
-              <input id="t_title" placeholder="Например: Подготовить отчёт / Позвонить / Проверить…" />
-            </div>
-
-            <div class="full">
-              <label>Описание</label>
-              <textarea id="t_desc" placeholder="Суть, критерий готовности, ссылки, документы…"></textarea>
-            </div>
-
-            <div>
-              <label>Статус</label>
-              <select id="t_status">
-                <option value="todo">К выполнению</option>
-                <option value="doing">В работе</option>
-                <option value="done">Готово</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Приоритет</label>
-              <select id="t_prio">
-                <option value="1">P1 — срочно</option>
-                <option value="2" selected>P2 — важно</option>
-                <option value="3">P3 — спокойно</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Срок (дата)</label>
-              <input id="t_due" type="date" />
-            </div>
-
-            <div>
-              <label>Ответственный</label>
-              <input id="t_owner" placeholder="Например: Я / Иван / Отдел…" />
-            </div>
-
-            <div class="full">
-              <label>Теги (через запятую)</label>
-              <input id="t_tags" placeholder="волс, юр, финансы, дом, семья…" />
-            </div>
-
-            <div class="full">
-              <label>Чеклист (каждый пункт с новой строки)</label>
-              <textarea id="t_check" placeholder="1) …&#10;2) …&#10;3) …"></textarea>
-              <div class="mini">Автоматизация: если все пункты чеклиста отмечены — можно закрывать задачу в 1 клик.</div>
-            </div>
-
-            <div class="full">
-              <label>Повтор (автосоздание следующей задачи после “Готово”)</label>
-              <select id="t_repeat">
-                <option value="">Не повторять</option>
-                <option value="daily">Ежедневно</option>
-                <option value="weekly">Еженедельно</option>
-                <option value="monthly">Ежемесячно</option>
-              </select>
-              <div class="mini">Пример: “Еженедельно” + срок = ближайшая пятница → после закрытия создастся следующая с новым сроком.</div>
-            </div>
-
-            <div class="full" style="display:flex; gap:8px; flex-wrap:wrap">
-              <button class="primary" id="btnSave">💾 Сохранить</button>
-              <button class="good" id="btnMarkDone">✅ Закрыть</button>
-              <button class="bad" id="btnDelete">🗑 Удалить</button>
-            </div>
-
-            <div class="full">
-              <div class="divider"></div>
-              <div class="hint">
-                <b>Быстрые правила (встроено):</b>
-                <ul style="margin:8px 0 0 18px; padding:0; color:var(--muted)">
-                  <li>Просроченные задачи подсвечиваются и попадают в фильтр “Просроченные”.</li>
-                  <li>Если срок сегодня/завтра — пометка “скоро срок”.</li>
-                  <li>Повторяющиеся задачи создаются автоматически после закрытия.</li>
-                  <li>Журнал действий пишется автоматически (создание/правка/перетаскивание/закрытие).</li>
-                </ul>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </aside>
     </div>
 
-    <div class="toast" id="toast"></div>
-  </div>
-
-  <input id="fileInput" type="file" accept="application/json" hidden />
-
-  <script>
-    /***********************
-     * TaskOps — Single-file app
-     * Storage: LocalStorage
-     * Works on GitHub Pages (no backend)
-     ***********************/
-
-    const LS_KEY = "taskops.v1.data";
-    const LS_LOG = "taskops.v1.log";
-    const SOON_DAYS = 1; // срок "скоро" = сегодня/завтра (1 день вперёд)
-
-    /** @type {Array<Task>} */
-    let tasks = [];
-    let editingId = null;
-
-    /** Utils */
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-    const uid = () => Math.random().toString(36).slice(2,10) + "-" + Date.now().toString(36);
-    const todayISO = () => new Date().toISOString().slice(0,10);
-
-    function parseDateISO(d){
-      if(!d) return null;
-      const t = new Date(d+"T00:00:00");
-      return isNaN(t.getTime()) ? null : t;
-    }
-    function daysBetween(a,b){
-      // b - a, in days
-      const ms = (b - a);
-      return Math.floor(ms / (1000*60*60*24));
-    }
-    function addDaysISO(dateISO, days){
-      const d = parseDateISO(dateISO || todayISO()) || new Date();
-      d.setDate(d.getDate() + days);
-      return d.toISOString().slice(0,10);
-    }
-    function addPeriodISO(dateISO, period){
-      // period: daily/weekly/monthly
-      const d = parseDateISO(dateISO || todayISO()) || new Date();
-      if(period === "daily") d.setDate(d.getDate() + 1);
-      if(period === "weekly") d.setDate(d.getDate() + 7);
-      if(period === "monthly") d.setMonth(d.getMonth() + 1);
-      return d.toISOString().slice(0,10);
-    }
-    function toast(msg){
-      const t = $("#toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      setTimeout(()=>t.classList.remove("show"), 2600);
-    }
-    function log(msg){
-      const ts = new Date().toLocaleString("ru-RU");
-      const line = `[${ts}] ${msg}`;
-      const arr = loadLog();
-      arr.unshift(line);
-      localStorage.setItem(LS_LOG, JSON.stringify(arr.slice(0,400)));
-      renderLog();
-    }
-    function loadLog(){
-      try{ return JSON.parse(localStorage.getItem(LS_LOG) || "[]"); }catch{ return []; }
-    }
-
-    /** Data model */
-    function normalizeTask(t){
-      return {
-        id: t.id || uid(),
-        title: (t.title || "").trim(),
-        desc: t.desc || "",
-        status: t.status || "todo", // todo|doing|done
-        prio: String(t.prio || "2"), // 1|2|3
-        due: t.due || "", // YYYY-MM-DD
-        owner: t.owner || "",
-        tags: Array.isArray(t.tags) ? t.tags : (t.tags ? String(t.tags).split(",").map(s=>s.trim()).filter(Boolean) : []),
-        checklist: Array.isArray(t.checklist) ? t.checklist : [],
-        repeat: t.repeat || "", // ""|daily|weekly|monthly
-        createdAt: t.createdAt || Date.now(),
-        updatedAt: Date.now(),
-        lastDoneAt: t.lastDoneAt || null
-      };
-    }
-
-    function save(){
-      localStorage.setItem(LS_KEY, JSON.stringify(tasks));
-      renderAll();
-    }
-    function load(){
-      try{
-        const raw = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
-        tasks = raw.map(normalizeTask);
-      }catch{
-        tasks = [];
-      }
-
-      if(tasks.length === 0){
-        // seed examples
-        tasks = [
-          normalizeTask({
-            title:"Ежедневный контроль: просрочки и срок сегодня",
-            desc:"Открыть фильтр “Просроченные” и “Срок сегодня”. Перепланировать или закрыть.",
-            status:"todo", prio:"1", due: todayISO(), tags:["контроль"], owner:"Я", repeat:"daily",
-            checklist:[{text:"Проверить просрочки",done:false},{text:"Проверить срок сегодня",done:false}]
-          }),
-          normalizeTask({
-            title:"Еженедельный план: задачи на 7 дней",
-            desc:"По фильтру “≤ 7 дней” расставить приоритеты, назначить ответственных, уточнить сроки.",
-            status:"todo", prio:"2", due: addDaysISO(todayISO(), 3), tags:["план"], owner:"Я", repeat:"weekly"
-          }),
-          normalizeTask({
-            title:"Настроить уведомления (по желанию)",
-            desc:"Кнопка 🔔 → разрешить. Тогда просрочка/скоро срок будут напоминаться.",
-            status:"doing", prio:"3", due: addDaysISO(todayISO(), 1), tags:["система"], owner:"Я"
-          })
-        ];
-        localStorage.setItem(LS_KEY, JSON.stringify(tasks));
-        log("Инициализация: создан стартовый набор задач.");
-      }
-    }
-
-    /** Filtering */
-    function matchesFilters(t){
-      const q = ($("#q").value || "").trim().toLowerCase();
-      const fStatus = $("#fStatus").value;
-      const fShow = $("#fShow").value;
-
-      if(fStatus && t.status !== fStatus) return false;
-
-      if(q){
-        const hay = [
-          t.title, t.desc, t.owner,
-          ...(t.tags || []).join(" "),
-          ...(t.checklist||[]).map(x=>x.text).join(" ")
-        ].join(" ").toLowerCase();
-        if(!hay.includes(q)) return false;
-      }
-
-      const now = parseDateISO(todayISO());
-      const due = parseDateISO(t.due);
-
-      if(fShow === "overdue"){
-        if(!(due && t.status !== "done" && due < now)) return false;
-      }
-      if(fShow === "today"){
-        if(!(t.due === todayISO())) return false;
-      }
-      if(fShow === "week"){
-        if(!(due && daysBetween(now, due) >= 0 && daysBetween(now, due) <= 7)) return false;
-      }
-
-      return true;
-    }
-
-    /** Automation Engine */
-    function computeFlags(t){
-      const now = parseDateISO(todayISO());
-      const due = parseDateISO(t.due);
-      const flags = {overdue:false, soon:false, dueIn:null};
-
-      if(due){
-        const diff = daysBetween(now, due);
-        flags.dueIn = diff;
-        if(t.status !== "done" && diff < 0) flags.overdue = true;
-        if(t.status !== "done" && diff >= 0 && diff <= SOON_DAYS) flags.soon = true;
-      }
-      return flags;
-    }
-
-    function runAutomation({silent=false}={}){
-      // 1) Create next recurring tasks if completed
-      // rule: if repeat != "" and status==done and (lastDoneAt recent) => create next and clear repeat on old? keep repeat on old
-      let created = 0;
-      for(const t of tasks){
-        if(!t.repeat) continue;
-        if(t.status !== "done") continue;
-
-        // prevent duplicate creation: if already created after this completion
-        // we store lastDoneAt on completion; and store on task: _spawnedFromDoneAt marker
-        if(!t.lastDoneAt) continue;
-        if(t._spawnedFromDoneAt === t.lastDoneAt) continue;
-
-        // create next task
-        const next = normalizeTask({
-          title: t.title,
-          desc: t.desc,
-          status: "todo",
-          prio: t.prio,
-          due: t.due ? addPeriodISO(t.due, t.repeat) : addPeriodISO(todayISO(), t.repeat),
-          owner: t.owner,
-          tags: t.tags,
-          repeat: t.repeat,
-          checklist: (t.checklist||[]).map(x=>({text:x.text, done:false}))
-        });
-        next._generatedBy = t.id;
-
-        tasks.push(next);
-        t._spawnedFromDoneAt = t.lastDoneAt;
-        created++;
-        log(`Авто: создан повтор "${next.title}" (срок ${next.due || "—"})`);
-      }
-
-      // 2) Notify for overdue/soon (if permission)
-      const notifyOk = (typeof Notification !== "undefined" && Notification.permission === "granted");
-      if(notifyOk){
-        const now = parseDateISO(todayISO());
-        const dueSoon = tasks.filter(t=>{
-          const f = computeFlags(t);
-          return (f.overdue || f.soon) && t.status !== "done";
-        });
-
-        // throttle: notify not more often than every 60 minutes
-        const last = Number(localStorage.getItem("taskops.v1.lastNotify") || "0");
-        const sinceMin = (Date.now() - last) / 60000;
-
-        if(dueSoon.length && sinceMin >= 60){
-          const overdueCount = dueSoon.filter(t=>computeFlags(t).overdue).length;
-          const soonCount = dueSoon.filter(t=>computeFlags(t).soon).length;
-
-          new Notification("TaskOps: контроль сроков", {
-            body: `Просрочено: ${overdueCount}, скоро срок: ${soonCount}. Откройте TaskOps для деталей.`,
-            silent: true
-          });
-          localStorage.setItem("taskops.v1.lastNotify", String(Date.now()));
-        }
-      }
-
-      if(!silent){
-        save();
-        toast(created ? `Автоматика: создано повторов — ${created}` : "Автоматика: изменений нет");
-      }else{
-        save();
-      }
-    }
-
-    /** Rendering */
-    function prioLabel(p){
-      if(p==="1") return "P1";
-      if(p==="2") return "P2";
-      return "P3";
-    }
-    function statusLabel(s){
-      if(s==="todo") return "К выполнению";
-      if(s==="doing") return "В работе";
-      return "Готово";
-    }
-
-    function cardHTML(t){
-      const f = computeFlags(t);
-      const dueTxt = t.due ? `Срок: ${t.due}` : "Срок: —";
-      const tags = (t.tags||[]).slice(0,4).map(x=>`<span class="tag">#${escapeHtml(x)}</span>`).join("");
-      const badge = f.overdue ? `<span class="badge overdue">просрочено</span>` :
-                    f.soon ? `<span class="badge soon">скоро срок</span>` : "";
-      return `
-        <div class="card" draggable="true" data-id="${t.id}">
-          ${badge}
-          <div class="t">${escapeHtml(t.title || "(без названия)")}</div>
-          <div class="meta">
-            <span class="tag prio ${t.prio==="1"?"p1":t.prio==="2"?"p2":"p3"}">${prioLabel(t.prio)}</span>
-            <span class="tag">${escapeHtml(dueTxt)}</span>
-            ${t.owner ? `<span class="tag">👤 ${escapeHtml(t.owner)}</span>` : ""}
-            ${tags}
+    <!-- TASKS TAB -->
+    <section id="tab-tasks" class="grid" style="display:grid;">
+      <div class="card">
+        <div class="hd">
+          <div class="h">Реестр задач</div>
+          <div class="legend">
+            <span class="pill bad"><span class="dot bad"></span>🔴 просрочено</span>
+            <span class="pill warn"><span class="dot warn"></span>🟡 ≤3 дня</span>
+            <span class="pill"><span class="dot"></span>остальное</span>
           </div>
         </div>
-      `;
-    }
+        <div class="bd">
+          <div class="chips" id="summaryChips"></div>
+          <div class="sep"></div>
 
-    function renderBoard(){
-      const dzTodo = $("#dz_todo");
-      const dzDoing = $("#dz_doing");
-      const dzDone = $("#dz_done");
-      dzTodo.innerHTML = "";
-      dzDoing.innerHTML = "";
-      dzDone.innerHTML = "";
-
-      const filtered = tasks.filter(matchesFilters);
-
-      const todo = filtered.filter(t=>t.status==="todo");
-      const doing = filtered.filter(t=>t.status==="doing");
-      const done = filtered.filter(t=>t.status==="done");
-
-      $("#c_todo").textContent = String(todo.length);
-      $("#c_doing").textContent = String(doing.length);
-      $("#c_done").textContent = String(done.length);
-
-      todo.sort(sorter).forEach(t=>dzTodo.insertAdjacentHTML("beforeend", cardHTML(t)));
-      doing.sort(sorter).forEach(t=>dzDoing.insertAdjacentHTML("beforeend", cardHTML(t)));
-      done.sort(sorter).forEach(t=>dzDone.insertAdjacentHTML("beforeend", cardHTML(t)));
-
-      // drag handlers
-      $$(".card").forEach(el=>{
-        el.addEventListener("dragstart", (e)=>{
-          e.dataTransfer.setData("text/plain", el.dataset.id);
-          setTimeout(()=>el.classList.add("ghost"), 0);
-        });
-        el.addEventListener("dragend", ()=>{
-          el.classList.remove("ghost");
-        });
-        el.addEventListener("click", ()=>{
-          openEditor(el.dataset.id);
-        });
-      });
-
-      $$(".col").forEach(col=>{
-        col.addEventListener("dragover", (e)=>{ e.preventDefault(); });
-        col.addEventListener("drop", (e)=>{
-          e.preventDefault();
-          const id = e.dataTransfer.getData("text/plain");
-          const status = col.dataset.status;
-          moveTask(id, status);
-        });
-      });
-    }
-
-    function sorter(a,b){
-      // overdue first, then prio, then due asc, then updated desc
-      const fa = computeFlags(a), fb = computeFlags(b);
-      if(fa.overdue && !fb.overdue) return -1;
-      if(!fa.overdue && fb.overdue) return 1;
-
-      if(a.prio !== b.prio) return Number(a.prio) - Number(b.prio);
-
-      const da = a.due ? a.due : "9999-12-31";
-      const db = b.due ? b.due : "9999-12-31";
-      if(da !== db) return da.localeCompare(db);
-
-      return (b.updatedAt||0) - (a.updatedAt||0);
-    }
-
-    function renderList(){
-      const el = $("#list");
-      el.innerHTML = "";
-      const filtered = tasks.filter(matchesFilters).sort(sorter);
-      if(!filtered.length){
-        el.innerHTML = `<div class="hint">Ничего не найдено по фильтрам.</div>`;
-        return;
-      }
-
-      for(const t of filtered){
-        const f = computeFlags(t);
-        const due = t.due || "—";
-        const ov = f.overdue ? " • просрочено" : f.soon ? " • скоро срок" : "";
-        el.insertAdjacentHTML("beforeend", `
           <div class="row">
             <div>
-              <div class="rtitle">${escapeHtml(t.title || "(без названия)")}</div>
-              <div class="rsub">${escapeHtml((t.tags||[]).map(x=>"#"+x).join(" "))}</div>
+              <label>Поиск (ID / задача / владелец)</label>
+              <input id="q" placeholder="Например: ВОЛС, договор, ФАС, T-012..." />
             </div>
-            <div class="rcell">Статус: <b>${statusLabel(t.status)}</b></div>
-            <div class="rcell">Приоритет: <b>${prioLabel(t.prio)}</b></div>
-            <div class="rcell">Срок: <b>${escapeHtml(due)}</b><span style="color:var(--muted)">${ov}</span></div>
-            <div class="rbtns">
-              <button class="primary" data-open="${t.id}">Открыть</button>
-              <button class="good" data-done="${t.id}">Готово</button>
+            <div class="row" style="grid-template-columns: 1fr 1fr; gap:10px;">
+              <div>
+                <label>Владелец</label>
+                <select id="fOwner"></select>
+              </div>
+              <div>
+                <label>Статус</label>
+                <select id="fStatus">
+                  <option value="">Все</option>
+                  <option value="Backlog">Backlog</option>
+                  <option value="In progress">In progress</option>
+                  <option value="Done">Done</option>
+                </select>
+              </div>
             </div>
           </div>
-        `);
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center;">
+            <label style="margin:0; display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="onlyHot" style="width:auto; transform: scale(1.05);" />
+              <span class="small">Только 🔴/🟡</span>
+            </label>
+
+            <div class="btns" style="margin-left:auto;">
+              <button id="btnExport">Экспорт JSON</button>
+              <button id="btnImport">Импорт JSON</button>
+              <input id="importFile" type="file" accept="application/json" style="display:none" />
+              <button id="btnClear" class="danger">Сбросить всё</button>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:90px;">ID</th>
+                  <th>Задача</th>
+                  <th style="width:190px;">Владелец</th>
+                  <th style="width:130px;">Срок</th>
+                  <th style="width:140px;">Статус</th>
+                  <th>След. шаг</th>
+                </tr>
+              </thead>
+              <tbody id="tasksBody"></tbody>
+            </table>
+          </div>
+
+          <div class="sep"></div>
+          <div class="muted small">
+            Подсказка: клик по строке — редактирование. Быстрое добавление: <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> в форме справа.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd">
+          <div class="h">Добавить задачу (6 полей)</div>
+          <div class="muted small">ID присвоится автоматически</div>
+        </div>
+        <div class="bd">
+          <div>
+            <label>Задача</label>
+            <textarea id="nTask" placeholder="Коротко и по делу: что нужно сделать?"></textarea>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Владелец</label>
+              <select id="nOwner"></select>
+            </div>
+            <div>
+              <label>Срок</label>
+              <input id="nDue" type="date" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Статус</label>
+              <select id="nStatus">
+                <option>Backlog</option>
+                <option selected>In progress</option>
+                <option>Done</option>
+              </select>
+            </div>
+            <div>
+              <label>Следующий шаг</label>
+              <input id="nNext" placeholder="Одно действие: позвонить/подготовить/согласовать..." />
+            </div>
+          </div>
+
+          <div class="btns" style="margin-top:12px;">
+            <button class="primary" id="btnAdd">Добавить</button>
+            <button id="btnAddDemo">Заполнить демо</button>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="card" style="background: rgba(255,255,255,.02); box-shadow:none;">
+            <div class="bd">
+              <div class="h" style="font-size:13px; font-weight:700;">Сотрудники</div>
+              <div class="muted small" style="margin-top:6px;">
+                Из графика отпусков загружено <span id="empCount"></span>. Можно добавить недостающего сотрудника вручную — он появится в списках владельцев задач.
+              </div>
+              <div class="row" style="margin-top:10px;">
+                <div>
+                  <label>ФИО</label>
+                  <input id="empName" placeholder="Например: Иванов Иван Иванович" />
+                </div>
+                <div>
+                  <label>Должность (необязательно)</label>
+                  <input id="empPos" placeholder="Например: главный специалист" />
+                </div>
+              </div>
+              <div class="btns" style="margin-top:10px;">
+                <button class="good" id="btnAddEmp">Добавить сотрудника</button>
+              </div>
+              <div class="muted small" style="margin-top:10px;">
+                Важно: сотрудники и задачи хранятся в вашем браузере. Для общего доступа — импорт/экспорт JSON.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- VACATIONS TAB -->
+    <section id="tab-vacations" class="grid" style="display:none;">
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="hd">
+          <div class="h">График отпусков — визуализация</div>
+          <div class="btns">
+            <select id="yearSel" style="width:auto; min-width: 120px;"></select>
+            <button id="btnUpcoming">Ближайшие 60 дней</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="muted small" id="vacInfo"></div>
+          <div class="sep"></div>
+
+          <div class="timeline">
+            <div class="tl" id="tl"></div>
+          </div>
+
+          <div class="sep"></div>
+          <div id="upcomingBox" class="muted small"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HELP TAB -->
+    <section id="tab-help" class="grid" style="display:none;">
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="hd"><div class="h">Как развернуть на GitHub Pages</div></div>
+        <div class="bd">
+          <ol class="small">
+            <li>Создайте репозиторий, например <span class="kbd">drnu-task-tracker</span>.</li>
+            <li>Добавьте файл <span class="kbd">index.html</span> и вставьте туда этот код целиком.</li>
+            <li>В GitHub: <span class="kbd">Settings → Pages</span> → Source: <span class="kbd">Deploy from a branch</span> → Branch: <span class="kbd">main</span> / folder <span class="kbd">/ (root)</span>.</li>
+            <li>Откройте ссылку Pages — трекер заработает.</li>
+          </ol>
+          <div class="sep"></div>
+          <div class="muted small">
+            Данные задач/сотрудников хранятся локально в браузере. Чтобы переносить между устройствами — используйте “Экспорт/Импорт JSON”.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="hd">
+        <div class="h">Редактирование задачи <span id="mId" class="mono"></span></div>
+        <div class="btns">
+          <button id="mClose">Закрыть</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div>
+          <label>Задача</label>
+          <textarea id="mTask"></textarea>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>Владелец</label>
+            <select id="mOwner"></select>
+          </div>
+          <div>
+            <label>Срок</label>
+            <input id="mDue" type="date" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label>Статус</label>
+            <select id="mStatus">
+              <option>Backlog</option>
+              <option>In progress</option>
+              <option>Done</option>
+            </select>
+          </div>
+          <div>
+            <label>Следующий шаг</label>
+            <input id="mNext" />
+          </div>
+        </div>
+        <div class="btns" style="margin-top:12px;">
+          <button class="primary" id="mSave">Сохранить</button>
+          <button class="danger" id="mDel">Удалить</button>
+          <button class="good" id="mDone">Отметить Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Встроенные данные графика отпусков (из вашего файла) ======
+    const VACATION_DATA = [
+      {
+        "name": "Абусалимов Анатолий Лачинович",
+        "position": "Начальник департамента",
+        "vacations": [
+          { "start": "2026-03-02", "end": "2026-03-06", "days": 5 },
+          { "start": "2026-06-15", "end": "2026-06-27", "days": 13 },
+          { "start": "2026-08-31", "end": "2026-09-09", "days": 10 }
+        ]
+      },
+      {
+        "name": "Бугаенко Наталья Викторовна",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-04-20", "end": "2026-04-26", "days": 7 },
+          { "start": "2026-07-20", "end": "2026-07-26", "days": 7 },
+          { "start": "2026-08-17", "end": "2026-08-30", "days": 14 },
+          { "start": "2026-11-16", "end": "2026-11-20", "days": 5 }
+        ]
+      },
+      {
+        "name": "Глазкова Екатерина Геннадьевна",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-06-01", "end": "2026-06-14", "days": 14 },
+          { "start": "2026-09-07", "end": "2026-09-20", "days": 14 }
+        ]
+      },
+      {
+        "name": "Корних Владислав Эрнестович",
+        "position": "Главный специалист",
+        "vacations": []
+      },
+      {
+        "name": "Куличкин Евгений Владимирович",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-02-16", "end": "2026-03-01", "days": 14 },
+          { "start": "2026-08-10", "end": "2026-08-23", "days": 14 }
+        ]
+      },
+      {
+        "name": "Олейникова Анастасия Евгеньевна",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-04-06", "end": "2026-04-19", "days": 14 },
+          { "start": "2026-10-05", "end": "2026-10-18", "days": 14 }
+        ]
+      },
+      {
+        "name": "Позднякова Ирина Викторовна",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-01-19", "end": "2026-02-01", "days": 14 },
+          { "start": "2026-07-06", "end": "2026-07-19", "days": 14 }
+        ]
+      },
+      {
+        "name": "Суржиков Святослав Михайлович",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-05-18", "end": "2026-05-31", "days": 14 },
+          { "start": "2026-12-07", "end": "2026-12-20", "days": 14 }
+        ]
+      },
+      {
+        "name": "Фонарев Аркадий Андреевич",
+        "position": "Главный специалист",
+        "vacations": [
+          { "start": "2026-03-16", "end": "2026-03-29", "days": 14 },
+          { "start": "2026-11-02", "end": "2026-11-15", "days": 14 }
+        ]
       }
+    ];
 
-      $$("button[data-open]").forEach(b=>b.addEventListener("click",()=>openEditor(b.dataset.open)));
-      $$("button[data-done]").forEach(b=>b.addEventListener("click",()=>markDone(b.dataset.done)));
+    // ====== Хранилище ======
+    const LS_TASKS = "drnu_tasks_v1";
+    const LS_COUNTER = "drnu_task_counter_v1";
+    const LS_EMP = "drnu_employees_v1"; // доп. сотрудники (локально)
+
+    // ====== Утилиты ======
+    const $ = (id) => document.getElementById(id);
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const toISODate = (d) => {
+      if (!d) return "";
+      const dt = new Date(d);
+      if (Number.isNaN(dt.getTime())) return "";
+      return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}`;
+    };
+    const fmtRU = (iso) => {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return "—";
+      return d.toLocaleDateString("ru-RU");
+    };
+    const daysBetweenIncl = (aISO, bISO) => {
+      const a = new Date(aISO);
+      const b = new Date(bISO);
+      const ms = (b - a);
+      if (Number.isNaN(ms)) return 0;
+      return Math.floor(ms / 86400000) + 1; // inclusive
+    };
+    const todayISO = () => toISODate(new Date());
+    const addDaysISO = (iso, n) => {
+      const d = new Date(iso);
+      d.setDate(d.getDate() + n);
+      return toISODate(d);
+    };
+    const isOverdue = (dueISO) => {
+      if (!dueISO) return false;
+      return new Date(dueISO) < new Date(todayISO());
+    };
+    const isDueSoon = (dueISO, days=3) => {
+      if (!dueISO) return false;
+      const t = new Date(todayISO());
+      const d = new Date(dueISO);
+      const diff = Math.floor((d - t) / 86400000);
+      return diff >= 0 && diff <= days;
+    };
+    const escapeHTML = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+
+    // ====== Сотрудники ======
+    function getEmployees() {
+      const base = VACATION_DATA.map(e => ({ name: e.name, position: e.position || "" }));
+      const extra = JSON.parse(localStorage.getItem(LS_EMP) || "[]");
+      const map = new Map();
+      for (const e of base) map.set(e.name.trim(), e);
+      for (const e of extra) {
+        const key = (e.name || "").trim();
+        if (!key) continue;
+        if (!map.has(key)) map.set(key, { name: key, position: e.position || "" });
+      }
+      return Array.from(map.values()).sort((a,b)=>a.name.localeCompare(b.name,"ru"));
     }
 
-    function renderKPIs(){
-      const all = tasks.length;
-      const done = tasks.filter(t=>t.status==="done").length;
-      const now = parseDateISO(todayISO());
-      const overdue = tasks.filter(t=>{
-        const d = parseDateISO(t.due);
-        return d && t.status!=="done" && d < now;
-      }).length;
-      const due7 = tasks.filter(t=>{
-        const d = parseDateISO(t.due);
-        if(!d || t.status==="done") return false;
-        const diff = daysBetween(now, d);
-        return diff >= 0 && diff <= 7;
-      }).length;
-
-      $("#k_all").textContent = String(all);
-      $("#k_done").textContent = String(done);
-      $("#k_overdue").textContent = String(overdue);
-      $("#k_due7").textContent = String(due7);
-
-      const pct = (n)=> all ? Math.round((n/all)*100) : 0;
-      $("#b_all").style.width = "100%";
-      $("#b_done").style.width = pct(done) + "%";
-      $("#b_overdue").style.width = pct(overdue) + "%";
-      $("#b_due7").style.width = pct(due7) + "%";
+    // ====== Задачи ======
+    function loadTasks() { return JSON.parse(localStorage.getItem(LS_TASKS) || "[]"); }
+    function saveTasks(tasks) { localStorage.setItem(LS_TASKS, JSON.stringify(tasks)); }
+    function nextId() {
+      const cur = parseInt(localStorage.getItem(LS_COUNTER) || "0", 10);
+      const n = cur + 1;
+      localStorage.setItem(LS_COUNTER, String(n));
+      return `T-${String(n).padStart(3,"0")}`;
     }
 
-    function renderLog(){
-      const arr = loadLog();
-      $("#log").textContent = arr.length ? arr.join("\n") : "Журнал пуст.";
+    function renderOwnerSelects() {
+      const emps = getEmployees();
+      $("empCount").textContent = String(emps.length);
+
+      const ownerOpts = [`<option value="">Все</option>`]
+        .concat(emps.map(e => `<option value="${escapeHTML(e.name)}">${escapeHTML(e.name)}</option>`))
+        .join("");
+      $("fOwner").innerHTML = ownerOpts;
+
+      const ownerOptsNoAll = emps.map(e => `<option value="${escapeHTML(e.name)}">${escapeHTML(e.name)}</option>`).join("");
+      $("nOwner").innerHTML = ownerOptsNoAll;
+      $("mOwner").innerHTML = ownerOptsNoAll;
     }
 
-    function renderAll(){
-      renderBoard();
-      renderList();
-      renderKPIs();
-      renderLog();
+    function renderSummary(tasks) {
+      const overdue = tasks.filter(t => t.status !== "Done" && isOverdue(t.due)).length;
+      const soon = tasks.filter(t => t.status !== "Done" && !isOverdue(t.due) && isDueSoon(t.due, 3)).length;
+      const inprog = tasks.filter(t => t.status === "In progress").length;
+      const backlog = tasks.filter(t => t.status === "Backlog").length;
+      const done = tasks.filter(t => t.status === "Done").length;
+
+      $("summaryChips").innerHTML = [
+        `<span class="chip"><span class="dot bad"></span>🔴 Просрочено: <b>${overdue}</b></span>`,
+        `<span class="chip"><span class="dot warn"></span>🟡 Горит (≤3 дня): <b>${soon}</b></span>`,
+        `<span class="chip"><span class="dot"></span>🟢 In progress: <b>${inprog}</b></span>`,
+        `<span class="chip"><span class="dot"></span>📥 Backlog: <b>${backlog}</b></span>`,
+        `<span class="chip"><span class="dot good"></span>✅ Done: <b>${done}</b></span>`
+      ].join("");
     }
 
-    /** Editor */
-    function clearForm(){
-      editingId = null;
-      $("#formTitle").textContent = "Новая задача";
-      $("#t_title").value = "";
-      $("#t_desc").value = "";
-      $("#t_status").value = "todo";
-      $("#t_prio").value = "2";
-      $("#t_due").value = "";
-      $("#t_owner").value = "";
-      $("#t_tags").value = "";
-      $("#t_check").value = "";
-      $("#t_repeat").value = "";
-      $("#btnDelete").disabled = true;
-      $("#btnMarkDone").disabled = false;
-    }
+    function getFilteredTasks(tasks) {
+      const q = ($("q").value || "").trim().toLowerCase();
+      const o = $("fOwner").value || "";
+      const s = $("fStatus").value || "";
+      const hot = $("onlyHot").checked;
 
-    function openEditor(id){
-      const t = tasks.find(x=>x.id===id);
-      if(!t) return;
+      let out = tasks.slice();
+      if (q) {
+        out = out.filter(t => `${t.id} ${t.task} ${t.owner} ${t.next}`.toLowerCase().includes(q));
+      }
+      if (o) out = out.filter(t => t.owner === o);
+      if (s) out = out.filter(t => t.status === s);
+      if (hot) out = out.filter(t => t.status !== "Done" && (isOverdue(t.due) || isDueSoon(t.due, 3)));
 
-      editingId = id;
-      $("#formTitle").textContent = "Редактирование";
-      $("#t_title").value = t.title || "";
-      $("#t_desc").value = t.desc || "";
-      $("#t_status").value = t.status || "todo";
-      $("#t_prio").value = t.prio || "2";
-      $("#t_due").value = t.due || "";
-      $("#t_owner").value = t.owner || "";
-      $("#t_tags").value = (t.tags||[]).join(", ");
-      $("#t_repeat").value = t.repeat || "";
-      $("#t_check").value = (t.checklist||[]).map(x=>(x.done?"[x] ":"[ ] ")+x.text).join("\n");
-
-      $("#btnDelete").disabled = false;
-      $("#btnMarkDone").disabled = (t.status==="done");
-    }
-
-    function readChecklist(text){
-      const lines = String(text||"").split("\n").map(s=>s.trim()).filter(Boolean);
-      // allow [x] [ ] or plain
-      return lines.map(line=>{
-        const m = line.match(/^\[(x| )\]\s*(.*)$/i);
-        if(m) return {done: m[1].toLowerCase()==="x", text: (m[2]||"").trim()};
-        return {done:false, text: line.replace(/^[-•\d\)\.]+\s*/,"").trim()};
-      }).filter(x=>x.text);
-    }
-
-    function upsertFromForm(){
-      const data = normalizeTask({
-        id: editingId || uid(),
-        title: $("#t_title").value,
-        desc: $("#t_desc").value,
-        status: $("#t_status").value,
-        prio: $("#t_prio").value,
-        due: $("#t_due").value,
-        owner: $("#t_owner").value,
-        tags: $("#t_tags").value,
-        repeat: $("#t_repeat").value,
-        checklist: readChecklist($("#t_check").value),
-        createdAt: editingId ? (tasks.find(x=>x.id===editingId)?.createdAt || Date.now()) : Date.now(),
-        lastDoneAt: tasks.find(x=>x.id===editingId)?.lastDoneAt || null
+      out.sort((a,b) => {
+        const ao = (a.status !== "Done" && isOverdue(a.due)) ? 0 : (a.status !== "Done" && isDueSoon(a.due,3) ? 1 : 2);
+        const bo = (b.status !== "Done" && isOverdue(b.due)) ? 0 : (b.status !== "Done" && isDueSoon(b.due,3) ? 1 : 2);
+        if (ao !== bo) return ao - bo;
+        const ad = a.due ? new Date(a.due).getTime() : 1e18;
+        const bd = b.due ? new Date(b.due).getTime() : 1e18;
+        if (ad !== bd) return ad - bd;
+        return a.id.localeCompare(b.id);
       });
-
-      if(!data.title){
-        toast("Введите название задачи.");
-        return;
-      }
-
-      if(editingId){
-        const idx = tasks.findIndex(x=>x.id===editingId);
-        tasks[idx] = {...tasks[idx], ...data, updatedAt: Date.now()};
-        log(`Правка: "${data.title}"`);
-      }else{
-        tasks.push({...data, createdAt: Date.now(), updatedAt: Date.now()});
-        log(`Создание: "${data.title}"`);
-      }
-
-      save();
-      toast("Сохранено");
-      openEditor(data.id);
+      return out;
     }
 
-    function moveTask(id, newStatus){
-      const t = tasks.find(x=>x.id===id);
-      if(!t) return;
-      if(t.status === newStatus) return;
+    function dueBadge(task) {
+      if (task.status === "Done") return `<span class="pill good"><span class="dot good"></span>${fmtRU(task.due)}</span>`;
+      if (isOverdue(task.due)) return `<span class="pill bad"><span class="dot bad"></span>${fmtRU(task.due)}</span>`;
+      if (isDueSoon(task.due, 3)) return `<span class="pill warn"><span class="dot warn"></span>${fmtRU(task.due)}</span>`;
+      return `<span class="pill"><span class="dot"></span>${fmtRU(task.due)}</span>`;
+    }
 
-      t.status = newStatus;
-      t.updatedAt = Date.now();
+    function renderTasks() {
+      const tasks = loadTasks();
+      renderSummary(tasks);
 
-      if(newStatus === "done" && !t.lastDoneAt){
-        t.lastDoneAt = Date.now();
+      const rows = getFilteredTasks(tasks).map(t => `
+        <tr data-id="${escapeHTML(t.id)}">
+          <td class="mono">${escapeHTML(t.id)}</td>
+          <td>${escapeHTML(t.task)}</td>
+          <td>${escapeHTML(t.owner || "—")}</td>
+          <td>${dueBadge(t)}</td>
+          <td>${escapeHTML(t.status)}</td>
+          <td>${escapeHTML(t.next || "")}</td>
+        </tr>
+      `).join("");
+
+      $("tasksBody").innerHTML = rows || `<tr><td colspan="6" class="muted">Пока нет задач. Добавьте справа.</td></tr>`;
+      for (const tr of $("tasksBody").querySelectorAll("tr[data-id]")) {
+        tr.addEventListener("click", () => openModal(tr.getAttribute("data-id")));
       }
-      if(newStatus !== "done"){
-        // if reopened, clear done marker to allow new completion event
-        t.lastDoneAt = null;
-      }
-
-      log(`Статус: "${t.title}" → ${statusLabel(newStatus)}`);
-      save();
-
-      // run automation quickly (recurring)
-      runAutomation({silent:true});
     }
 
-    function markDone(id){
-      const t = tasks.find(x=>x.id===id);
-      if(!t) return;
-      t.status = "done";
-      t.updatedAt = Date.now();
-      t.lastDoneAt = Date.now();
-      log(`Закрыто: "${t.title}"`);
-      save();
-      runAutomation({silent:false});
-      if(editingId === id) openEditor(id);
+    function addTask() {
+      const task = ($("nTask").value || "").trim();
+      const owner = $("nOwner").value || "";
+      const due = $("nDue").value || "";
+      const status = $("nStatus").value || "In progress";
+      const next = ($("nNext").value || "").trim();
+
+      if (!task) { alert("Заполните поле «Задача»"); return; }
+
+      const tasks = loadTasks();
+      tasks.push({ id: nextId(), task, owner, due, status, next });
+      saveTasks(tasks);
+
+      $("nTask").value = "";
+      $("nNext").value = "";
+      renderTasks();
     }
 
-    function deleteTask(){
-      if(!editingId) return;
-      const t = tasks.find(x=>x.id===editingId);
-      if(!t) return;
+    // ====== Модалка ======
+    let editingId = null;
+    function openModal(id) {
+      const tasks = loadTasks();
+      const t = tasks.find(x => x.id === id);
+      if (!t) return;
+      editingId = id;
 
-      if(!confirm(`Удалить задачу "${t.title}"?`)) return;
-      tasks = tasks.filter(x=>x.id!==editingId);
-      log(`Удалено: "${t.title}"`);
-      save();
-      clearForm();
-      toast("Удалено");
+      $("mId").textContent = id;
+      $("mTask").value = t.task || "";
+      $("mOwner").value = t.owner || "";
+      $("mDue").value = t.due || "";
+      $("mStatus").value = t.status || "In progress";
+      $("mNext").value = t.next || "";
+
+      $("modal").classList.add("open");
+    }
+    function closeModal() { $("modal").classList.remove("open"); editingId = null; }
+
+    function saveModal() {
+      if (!editingId) return;
+      const tasks = loadTasks();
+      const idx = tasks.findIndex(x => x.id === editingId);
+      if (idx < 0) return;
+
+      const task = ($("mTask").value || "").trim();
+      if (!task) { alert("Задача не может быть пустой"); return; }
+
+      tasks[idx] = {
+        id: editingId,
+        task,
+        owner: $("mOwner").value || "",
+        due: $("mDue").value || "",
+        status: $("mStatus").value || "In progress",
+        next: ($("mNext").value || "").trim()
+      };
+      saveTasks(tasks);
+      closeModal();
+      renderTasks();
     }
 
-    /** Export/Import */
-    function download(filename, text){
-      const blob = new Blob([text], {type:"application/json;charset=utf-8"});
+    function deleteModal() {
+      if (!editingId) return;
+      if (!confirm(`Удалить задачу ${editingId}?`)) return;
+      saveTasks(loadTasks().filter(x => x.id !== editingId));
+      closeModal();
+      renderTasks();
+    }
+    function doneModal() { if (!editingId) return; $("mStatus").value = "Done"; saveModal(); }
+
+    // ====== Экспорт/Импорт ======
+    function exportJSON() {
+      const payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        tasks: loadTasks(),
+        employeesExtra: JSON.parse(localStorage.getItem(LS_EMP) || "[]")
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = filename;
+      a.href = url;
+      a.download = `drnu-task-tracker-${toISODate(new Date())}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
 
-    function exportData(){
-      const payload = {
-        meta: {app:"TaskOps", version:"1.0", exportedAt: new Date().toISOString()},
-        tasks,
-        log: loadLog()
-      };
-      download(`taskops_backup_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
-      toast("Экспортировано в JSON");
-    }
-
-    function importData(file){
+    function importJSON(file) {
       const reader = new FileReader();
       reader.onload = () => {
-        try{
-          const payload = JSON.parse(String(reader.result||"{}"));
-          if(payload && Array.isArray(payload.tasks)){
-            tasks = payload.tasks.map(normalizeTask);
-            localStorage.setItem(LS_KEY, JSON.stringify(tasks));
-            if(Array.isArray(payload.log)) localStorage.setItem(LS_LOG, JSON.stringify(payload.log));
-            log("Импорт: данные загружены.");
-            renderAll();
-            toast("Импорт завершён");
-          }else{
-            toast("Файл не похож на бэкап TaskOps.");
-          }
-        }catch{
-          toast("Ошибка чтения JSON.");
+        try {
+          const payload = JSON.parse(reader.result);
+          if (Array.isArray(payload.tasks)) saveTasks(payload.tasks);
+          if (Array.isArray(payload.employeesExtra)) localStorage.setItem(LS_EMP, JSON.stringify(payload.employeesExtra));
+          renderOwnerSelects();
+          renderTasks();
+          alert("Импорт выполнен");
+        } catch (e) {
+          alert("Не удалось импортировать JSON: " + e.message);
         }
       };
       reader.readAsText(file, "utf-8");
     }
 
-    /** Notifications */
-    async function requestNotify(){
-      if(typeof Notification === "undefined"){
-        toast("Уведомления не поддерживаются в этом браузере.");
+    function clearAll() {
+      if (!confirm("Сбросить задачи и добавленных сотрудников?")) return;
+      localStorage.removeItem(LS_TASKS);
+      localStorage.removeItem(LS_COUNTER);
+      localStorage.removeItem(LS_EMP);
+      renderOwnerSelects();
+      renderTasks();
+      renderVacations();
+    }
+
+    // ====== Добавление сотрудника ======
+    function addEmployee() {
+      const name = ($("empName").value || "").trim();
+      const position = ($("empPos").value || "").trim();
+      if (!name) { alert("Введите ФИО сотрудника"); return; }
+
+      const extra = JSON.parse(localStorage.getItem(LS_EMP) || "[]");
+      const exists = extra.some(e => (e.name||"").trim().toLowerCase() === name.toLowerCase())
+        || VACATION_DATA.some(e => (e.name||"").trim().toLowerCase() === name.toLowerCase());
+      if (exists) { alert("Такой сотрудник уже есть в списке"); return; }
+
+      extra.push({ name, position });
+      localStorage.setItem(LS_EMP, JSON.stringify(extra));
+
+      $("empName").value = "";
+      $("empPos").value = "";
+      renderOwnerSelects();
+      renderTasks();
+      renderVacations();
+    }
+
+    // ====== Отпуска ======
+    function getAllVacationEmployees() {
+      const extras = JSON.parse(localStorage.getItem(LS_EMP) || "[]");
+      const list = VACATION_DATA.map(e => ({ ...e }));
+      for (const ex of extras) {
+        const key = (ex.name || "").trim();
+        if (!key) continue;
+        if (!list.some(x => x.name === key)) {
+          list.push({ name: key, position: ex.position || "", vacations: [] });
+        }
+      }
+      list.sort((a,b)=>a.name.localeCompare(b.name,"ru"));
+      return list;
+    }
+
+    function yearsFromVacations() {
+      const years = new Set();
+      for (const e of VACATION_DATA) {
+        for (const v of (e.vacations || [])) {
+          if (v.start) years.add(parseInt(String(v.start).slice(0,4),10));
+          if (v.end) years.add(parseInt(String(v.end).slice(0,4),10));
+        }
+      }
+      if (years.size === 0) years.add(new Date().getFullYear());
+      return Array.from(years).sort((a,b)=>a-b);
+    }
+
+    function renderVacations() {
+      const emps = getAllVacationEmployees();
+      const years = yearsFromVacations();
+      const ySel = $("yearSel");
+      const currentY = new Date().getFullYear();
+      const prevVal = parseInt(ySel.value || "0", 10) || null;
+
+      ySel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+      const useYear = (prevVal && years.includes(prevVal)) ? prevVal :
+                      (years.includes(currentY) ? currentY : years[0]);
+      ySel.value = String(useYear);
+
+      const year = parseInt(ySel.value, 10);
+      const yearStart = new Date(`${year}-01-01T00:00:00`);
+      const yearEnd = new Date(`${year}-12-31T00:00:00`);
+      const yearDays = Math.floor((yearEnd - yearStart) / 86400000) + 1;
+
+      $("vacInfo").textContent = `Год: ${year}. Полоски показывают интервалы отпусков по данным файла.`;
+
+      const monthNames = ["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"];
+
+      let html = `
+        <div class="tl-head">
+          <div class="left">Сотрудник</div>
+          <div class="months">
+            ${monthNames.map(m=>`<div>${m}</div>`).join("")}
+          </div>
+        </div>
+      `;
+
+      emps.forEach((e, idx) => {
+        const vacs = (e.vacations || []).filter(v => (v.start || "").startsWith(String(year)) || (v.end || "").startsWith(String(year)));
+        const bars = (vacs.length ? vacs : []).map((v, j) => {
+          const s = new Date(`${v.start}T00:00:00`);
+          const en = new Date(`${v.end}T00:00:00`);
+          if (Number.isNaN(s.getTime()) || Number.isNaN(en.getTime())) return "";
+          const cs = (s < yearStart) ? yearStart : s;
+          const ce = (en > yearEnd) ? yearEnd : en;
+
+          const left = ((cs - yearStart) / 86400000) / yearDays * 100;
+          const width = (daysBetweenIncl(toISODate(cs), toISODate(ce)) / yearDays) * 100;
+          const label = `${fmtRU(v.start)} – ${fmtRU(v.end)}${v.days ? ` · ${v.days} дн.` : ""}`;
+          const cls = (j % 2 === 0) ? "bar" : "bar alt";
+          return `<div class="${cls}" style="left:${left}%; width:${Math.max(width, 0.6)}%;" title="${escapeHTML(label)}">${escapeHTML(v.days ? `${v.days} дн.` : "Отпуск")}</div>`;
+        }).join("");
+
+        html += `
+          <div class="tl-row">
+            <div class="who">
+              <div class="nm">${escapeHTML(e.name)}</div>
+              <div class="ps">${escapeHTML(e.position || "")}</div>
+            </div>
+            <div class="bars">${bars}</div>
+          </div>
+        `;
+      });
+
+      $("tl").innerHTML = html;
+      renderUpcoming();
+    }
+
+    function renderUpcoming() {
+      const now = new Date();
+      const from = new Date(now);
+      const to = new Date(now);
+      to.setDate(to.getDate() + 60);
+
+      const items = [];
+      for (const e of getAllVacationEmployees()) {
+        for (const v of (e.vacations || [])) {
+          if (!v.start || !v.end) continue;
+          const s = new Date(`${v.start}T00:00:00`);
+          const en = new Date(`${v.end}T00:00:00`);
+          if (en < from || s > to) continue;
+          items.push({
+            name: e.name,
+            position: e.position || "",
+            start: v.start,
+            end: v.end,
+            days: v.days || daysBetweenIncl(v.start, v.end)
+          });
+        }
+      }
+      items.sort((a,b)=> new Date(a.start) - new Date(b.start));
+
+      if (!items.length) {
+        $("upcomingBox").innerHTML = `<div class="muted">В ближайшие 60 дней отпусков по данным графика не найдено.</div>`;
         return;
       }
-      if(Notification.permission === "granted"){
-        toast("Уведомления уже разрешены.");
-        return;
+      const rows = items.map(it => `
+        <div class="chip">
+          <span class="dot"></span>
+          <b>${escapeHTML(it.name)}</b>
+          <span class="muted">${escapeHTML(it.position)}</span>
+          <span>—</span>
+          <span>${escapeHTML(fmtRU(it.start))} → ${escapeHTML(fmtRU(it.end))}</span>
+          <span class="muted">(${it.days} дн.)</span>
+        </div>
+      `).join("");
+      $("upcomingBox").innerHTML = `<div class="h" style="font-size:13px; font-weight:700;">Ближайшие 60 дней</div><div style="margin-top:10px;" class="chips">${rows}</div>`;
+    }
+
+    // ====== Tabs ======
+    function setTab(name) {
+      for (const b of document.querySelectorAll(".tab")) {
+        b.classList.toggle("active", b.dataset.tab === name);
       }
-      const p = await Notification.requestPermission();
-      toast(p === "granted" ? "Уведомления включены." : "Уведомления не разрешены.");
+      $("tab-tasks").style.display = (name === "tasks") ? "grid" : "none";
+      $("tab-vacations").style.display = (name === "vacations") ? "grid" : "none";
+      $("tab-help").style.display = (name === "help") ? "grid" : "none";
+      if (name === "vacations") renderVacations();
+      if (name === "tasks") renderTasks();
     }
 
-    /** Tabs */
-    function setTab(name){
-      $$(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
-      $("#tab-board").style.display = (name==="board") ? "" : "none";
-      $("#tab-list").style.display = (name==="list") ? "" : "none";
-      $("#tab-analytics").style.display = (name==="analytics") ? "" : "none";
-      renderAll();
-    }
+    // ====== INIT ======
+    function init() {
+      renderOwnerSelects();
+      renderTasks();
+      renderVacations();
 
-    /** HTML escape */
-    function escapeHtml(str){
-      return String(str||"")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
+      $("nDue").value = addDaysISO(todayISO(), 7);
 
-    /** Clock */
-    function tickNow(){
-      const d = new Date();
-      $("#nowPill").textContent = d.toLocaleString("ru-RU", {weekday:"short", day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"});
-    }
+      for (const b of document.querySelectorAll(".tab")) {
+        b.addEventListener("click", () => setTab(b.dataset.tab));
+      }
 
-    /** Events */
-    function bind(){
-      $("#btnNew").addEventListener("click", ()=>{
-        clearForm();
-        toast("Создайте задачу и нажмите “Сохранить”.");
-      });
-      $("#btnCloseForm").addEventListener("click", ()=>{
-        // just clear for now
-        clearForm();
-      });
-      $("#btnSave").addEventListener("click", upsertFromForm);
-      $("#btnDelete").addEventListener("click", deleteTask);
-      $("#btnMarkDone").addEventListener("click", ()=>{
-        if(!editingId) return;
-        markDone(editingId);
+      $("btnAdd").addEventListener("click", addTask);
+      $("btnAddDemo").addEventListener("click", () => {
+        $("nTask").value = "Подготовить проект допсоглашения по размещению ВОЛС (версия для согласования)";
+        $("nNext").value = "Согласовать с юристами и отправить контрагенту";
+        $("nStatus").value = "In progress";
       });
 
-      $("#btnExport").addEventListener("click", exportData);
-      $("#btnImport").addEventListener("click", ()=> $("#fileInput").click());
-      $("#fileInput").addEventListener("change", (e)=>{
-        const f = e.target.files && e.target.files[0];
-        if(f) importData(f);
+      $("nTask").addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") addTask();
+      });
+
+      $("q").addEventListener("input", renderTasks);
+      $("fOwner").addEventListener("change", renderTasks);
+      $("fStatus").addEventListener("change", renderTasks);
+      $("onlyHot").addEventListener("change", renderTasks);
+
+      $("btnExport").addEventListener("click", exportJSON);
+      $("btnImport").addEventListener("click", () => $("importFile").click());
+      $("importFile").addEventListener("change", (e) => {
+        const f = e.target.files?.[0];
+        if (f) importJSON(f);
         e.target.value = "";
       });
+      $("btnClear").addEventListener("click", clearAll);
 
-      $("#btnReset").addEventListener("click", ()=>{
-        if(!confirm("Сбросить все задачи и журнал?")) return;
-        localStorage.removeItem(LS_KEY);
-        localStorage.removeItem(LS_LOG);
-        localStorage.removeItem("taskops.v1.lastNotify");
-        load();
-        log("Сброс: данные очищены.");
-        renderAll();
-        clearForm();
-        toast("Сброшено");
+      $("btnAddEmp").addEventListener("click", addEmployee);
+
+      $("mClose").addEventListener("click", closeModal);
+      $("mSave").addEventListener("click", saveModal);
+      $("mDel").addEventListener("click", deleteModal);
+      $("mDone").addEventListener("click", doneModal);
+      $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) closeModal(); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+      $("yearSel").addEventListener("change", renderVacations);
+      $("btnUpcoming").addEventListener("click", () => {
+        $("upcomingBox").scrollIntoView({ behavior: "smooth", block: "start" });
       });
 
-      $("#btnNotify").addEventListener("click", requestNotify);
-
-      $$(".tab").forEach(btn=>{
-        btn.addEventListener("click", ()=>setTab(btn.dataset.tab));
-      });
-
-      // filters
-      ["q","fStatus","fShow"].forEach(id=>{
-        $("#"+id).addEventListener("input", renderAll);
-        $("#"+id).addEventListener("change", renderAll);
-      });
-
-      $("#btnRunAutomation").addEventListener("click", ()=>runAutomation({silent:false}));
-
-      // keyboard shortcuts
-      window.addEventListener("keydown", (e)=>{
-        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="k"){
-          e.preventDefault();
-          $("#q").focus();
-        }
-        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="n"){
-          e.preventDefault();
-          clearForm();
-          $("#t_title").focus();
-        }
-        if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="s"){
-          e.preventDefault();
-          upsertFromForm();
-        }
-      });
+      const baseCount = VACATION_DATA.length;
+      if (baseCount < 10) {
+        $("subtitle").textContent = `Локальное хранение в браузере. В графике отпусков найдено ${baseCount} сотрудников — можно добавить недостающих вручную.`;
+      }
     }
 
-    /** Boot */
-    function boot(){
-      load();
-      bind();
-      clearForm();
-      renderAll();
-      tickNow();
-      setInterval(tickNow, 1000 * 10);
-
-      // periodic automation (every 5 min)
-      setInterval(()=>runAutomation({silent:true}), 1000 * 60 * 5);
-      runAutomation({silent:true});
-    }
-
-    boot();
+    init();
   </script>
-
-  <!--
-    Как развернуть на GitHub Pages:
-    1) Создайте репозиторий (например taskops).
-    2) Добавьте файл index.html (этот файл) в корень репозитория.
-    3) Settings → Pages → Build and deployment → Source: Deploy from a branch
-       Branch: main / root.
-    4) Откройте ссылку Pages — готово.
-  -->
 </body>
 </html>
