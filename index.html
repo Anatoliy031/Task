@@ -3,1149 +3,844 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Трекер задач — ДРНУ (Кубаньэнерго)</title>
+  <title>ДРНУ — трекер задач</title>
   <style>
-    :root{
-      --bg:#0b1220;
-      --card:#101b31;
-      --line:rgba(255,255,255,.10);
-      --text:#eaf1ff;
-      --muted:#a8b3c7;
-      --good:#34d399;
-      --warn:#fbbf24;
-      --bad:#fb7185;
-      --info:#60a5fa;
-      --chip:rgba(255,255,255,.06);
-      --shadow:0 18px 60px rgba(0,0,0,.35);
-      --r:16px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    :root {
+      /* Цветовая палитра: тёмная тема с акцентами */
+      --bg: #0e162b;
+      --card: #16233d;
+      --accent: #5aa9fa;
+      --text: #e5ebf7;
+      --muted: #93a2c0;
+      --bad: #f87171;
+      --warn: #fbbf24;
+      --good: #34d399;
+      --danger: #f43f5e;
+      --radius: 14px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.35);
+      font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--sans);
-      color:var(--text);
-      background:
-        radial-gradient(1100px 700px at 18% 10%, rgba(96,165,250,.18), transparent 55%),
-        radial-gradient(1000px 700px at 85% 0%, rgba(52,211,153,.12), transparent 50%),
-        var(--bg);
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .wrap{max-width:1200px;margin:0 auto;padding:14px}
-    .top{
-      position:sticky; top:10px; z-index:30;
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:12px 14px;
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(16,27,49,.78);
-      backdrop-filter: blur(10px);
-      box-shadow:var(--shadow);
+    #app {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .title{display:flex;flex-direction:column;gap:4px}
-    .title h1{margin:0;font-size:15px;letter-spacing:.2px}
-    .sub{font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .statusDot{width:9px;height:9px;border-radius:50%;background:var(--warn);display:inline-block}
-    .statusDot.ok{background:var(--good)}
-    .statusDot.bad{background:var(--bad)}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    button{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      color:var(--text);
-      padding:9px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      font-size:13px;
-      white-space:nowrap;
+    /* Заголовок / summary */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
-    button.primary{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.55)}
-    button.good{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.45)}
-    button.danger{background:rgba(251,113,133,.16);border-color:rgba(251,113,133,.45)}
-    button:disabled{opacity:.55;cursor:not-allowed}
-
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .chips{display:flex;gap:8px;flex-wrap:wrap}
-    .chip{
-      background:var(--chip);
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:6px 10px;
-      font-size:12px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      white-space:nowrap;
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
     }
-    .dot{width:8px;height:8px;border-radius:50%;background:var(--info)}
-    .dot.good{background:var(--good)}
-    .dot.warn{background:var(--warn)}
-    .dot.bad{background:var(--bad)}
-
-    .grid{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns: 1.35fr .65fr;
-      gap:12px;
-      align-items:start;
+    .summary-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
     }
-    @media (max-width: 980px){
-      .top{position:static}
-      .grid{grid-template-columns:1fr}
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
     }
-
-    .card{
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      background:rgba(16,27,49,.70);
-      backdrop-filter: blur(10px);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+    .chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: var(--muted);
     }
-    .hd{
-      padding:12px 14px;
-      border-bottom:1px solid var(--line);
-      display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap
+    .dot.bad { background: var(--bad); }
+    .dot.warn { background: var(--warn); }
+    .dot.good { background: var(--good); }
+    .dot.neutral { background: var(--accent); }
+    .status-text {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
     }
-    .hd .h{font-size:13px;font-weight:800}
-    .bd{padding:12px 14px}
-
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input, select, textarea{
-      width:100%;
-      background:rgba(10,18,36,.75);
-      border:1px solid var(--line);
-      color:var(--text);
-      border-radius:12px;
-      padding:10px 10px;
-      font-size:13px;
-      outline:none;
+    /* Фильтры */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: var(--card);
+      padding: 10px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      align-items: center;
     }
-    textarea{min-height:84px;resize:vertical}
-    .two{display:grid;grid-template-columns: 1fr 1fr; gap:10px}
-    @media (max-width: 640px){ .two{grid-template-columns:1fr} }
-
-    .quick{
-      display:flex;gap:8px;flex-wrap:wrap;align-items:center
+    .filters input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
     }
-    .qbtn{
-      padding:7px 10px;
-      border-radius:999px;
-      font-size:12px;
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
-    .qbtn.active{
-      background:rgba(96,165,250,.18);
-      border-color:rgba(96,165,250,.55);
+    .filter-chip {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
     }
-
-    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
-    table{width:100%;border-collapse:collapse;min-width:920px;background:rgba(10,18,36,.55)}
-    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;vertical-align:top}
-    th{position:sticky;top:0;background:rgba(10,18,36,.95);color:var(--muted);font-weight:700;text-align:left;z-index:2}
-    tr:hover td{background:rgba(255,255,255,.03)}
-    .mono{font-family:var(--mono);font-size:12px;color:#d7e3ff}
-    .badge{
-      display:inline-flex;align-items:center;gap:8px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      border-radius:999px;
-      padding:5px 10px;
-      font-size:12px;
-      white-space:nowrap;
+    .filter-chip.active {
+      background: rgba(90,169,250,0.25);
+      border-color: rgba(90,169,250,0.6);
     }
-    .badge.bad{border-color:rgba(251,113,133,.45);background:rgba(251,113,133,.12)}
-    .badge.warn{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.10)}
-    .badge.good{border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
-
-    .muted{color:var(--muted)}
-    .small{font-size:12px}
-    .hint{font-size:12px;color:var(--muted);line-height:1.35}
-
-    /* Модалки */
-    .modal{
-      position:fixed; inset:0; z-index:60;
-      background:rgba(0,0,0,.55);
-      display:none; align-items:center; justify-content:center;
-      padding:14px;
+    .me-select {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--muted);
     }
-    .modal.open{display:flex}
-    .box{
-      width:min(780px, 100%);
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:rgba(16,27,49,.92);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+    .me-select select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 6px 8px;
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
     }
-    .box .hd{border-bottom:1px solid var(--line)}
-    .box .bd{padding:14px}
-    .rightBtns{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
-
-    .warnLine{
-      margin-top:8px;
-      padding:8px 10px;
-      border-radius:12px;
-      border:1px solid rgba(251,191,36,.45);
-      background:rgba(251,191,36,.10);
-      font-size:12px;
+    /* Список задач */
+    #task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-
-    .vacBox{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 10px;
-      background:rgba(10,18,36,.45);
+    .task-card {
+      padding: 12px;
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
     }
-    details summary{
-      cursor:pointer;
-      list-style:none;
-      font-weight:700;
-      font-size:13px;
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
     }
-    details summary::-webkit-details-marker{display:none}
-    .vacList{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-    .vacItem{
-      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
-      font-size:12px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.08);
-      padding:7px 9px;
-      border-radius:12px;
+    .task-id {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .due-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+    }
+    .due-badge.bad { border-color: rgba(248,113,113,0.5); background: rgba(248,113,113,0.15); }
+    .due-badge.warn { border-color: rgba(251,191,36,0.5); background: rgba(251,191,36,0.15); }
+    .due-badge.good { border-color: rgba(52,211,153,0.5); background: rgba(52,211,153,0.15); }
+    .task-desc {
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .task-actions button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 2px;
+      line-height: 1;
+    }
+    .task-actions button.danger { color: var(--danger); }
+    .task-actions button.done { color: var(--good); }
+    /* Кнопка добавления */
+    #add-task-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: #0e162b;
+      font-weight: bold;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      margin-top: auto;
+    }
+    /* Модалка */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal.open { display: flex; }
+    .modal-content {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .modal-content h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group textarea,
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .modal-actions button {
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-cancel {
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+    }
+    .btn-save {
+      background: var(--accent);
+      color: #0e162b;
+    }
+    /* Состояния сохранения */
+    .saving-indicator {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    @media (max-width: 560px) {
+      .header, .filters {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .me-select {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 6px;
+      }
+      #add-task-btn {
+        position: sticky;
+        bottom: 10px;
+        z-index: 10;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="title">
-        <h1>Трекер задач ДРНУ</h1>
-        <div class="sub">
-          <span><span id="syncDot" class="statusDot"></span> <span id="syncText">не настроена синхронизация</span></span>
-          <span class="muted">•</span>
-          <span class="muted">общий файл: <span class="mono" id="filePathView">tasks.json</span></span>
-        </div>
+  <div id="app">
+    <div class="header">
+      <div>
+        <h1>Задачи ДРНУ</h1>
+        <div class="summary-chips" id="summary"></div>
       </div>
-      <div class="actions">
-        <button id="btnLoad">Загрузить</button>
-        <button id="btnSave" class="good">Сохранить</button>
-        <button id="btnSummary" class="primary">Сводка (копировать)</button>
-        <button id="btnSettings">Настройки</button>
+      <div class="me-select">
+        <span>Я:</span>
+        <select id="meSelect"></select>
       </div>
+      <div class="saving-indicator" id="statusLine"></div>
     </div>
-
-    <div style="margin-top:10px" class="row">
-      <div class="chips" id="kpi"></div>
-      <div style="margin-left:auto" class="row">
-        <label style="margin:0;display:flex;gap:8px;align-items:center" class="small">
-          <span class="muted">Я:</span>
-          <select id="meSel" style="width:auto;min-width:260px"></select>
-        </label>
-      </div>
+    <div class="filters">
+      <input id="searchInput" type="text" placeholder="Поиск по задачам..." />
+      <div class="filter-chips" id="filterChips"></div>
     </div>
-
-    <div class="grid">
-      <!-- ЛЕВО: таблица -->
-      <div class="card">
-        <div class="hd">
-          <div class="h">Задачи</div>
-          <div class="quick" id="quickFilters"></div>
-        </div>
-        <div class="bd">
-          <div class="two">
-            <div>
-              <label>Поиск</label>
-              <input id="q" placeholder="ID / задача / ответственный / следующий шаг" />
-            </div>
-            <div class="two" style="grid-template-columns: 1fr 1fr;">
-              <div>
-                <label>Ответственный</label>
-                <select id="fOwner"></select>
-              </div>
-              <div>
-                <label>Статус</label>
-                <select id="fStatus">
-                  <option value="">Все</option>
-                  <option value="В план">В план</option>
-                  <option value="В работе">В работе</option>
-                  <option value="Готово">Готово</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-top:10px" class="tableWrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:110px">ID</th>
-                  <th>Задача</th>
-                  <th style="width:220px">Ответственный</th>
-                  <th style="width:150px">Срок</th>
-                  <th style="width:120px">Статус</th>
-                  <th>Следующий шаг</th>
-                </tr>
-              </thead>
-              <tbody id="tb"></tbody>
-            </table>
-          </div>
-
-          <div class="hint" style="margin-top:10px">
-            Клик по строке — редактирование. Просрочка — 🔴, срок ≤ 3 дней — 🟡.
-          </div>
-        </div>
-      </div>
-
-      <!-- ПРАВО: добавление + отпуска -->
-      <div class="card">
-        <div class="hd">
-          <div class="h">Быстро добавить</div>
-          <div class="rightBtns">
-            <button id="btnNew" class="primary">Новая задача</button>
-          </div>
-        </div>
-        <div class="bd">
-          <div>
-            <label>Задача</label>
-            <textarea id="nTask" placeholder="Коротко и понятно: что сделать?"></textarea>
-          </div>
-
-          <div class="two" style="margin-top:10px">
-            <div>
-              <label>Ответственный</label>
-              <select id="nOwner"></select>
-            </div>
-            <div>
-              <label>Срок</label>
-              <input id="nDue" type="date" />
-            </div>
-          </div>
-
-          <div class="two" style="margin-top:10px">
-            <div>
-              <label>Статус</label>
-              <select id="nStatus">
-                <option>В план</option>
-                <option selected>В работе</option>
-                <option>Готово</option>
-              </select>
-            </div>
-            <div>
-              <label>Следующий шаг</label>
-              <input id="nNext" placeholder="Одно действие: согласовать / отправить / позвонить..." />
-            </div>
-          </div>
-
-          <div id="nWarn" class="warnLine" style="display:none"></div>
-
-          <div class="row" style="margin-top:10px">
-            <button id="btnAdd" class="good">Добавить</button>
-            <button id="btnClearNew">Очистить</button>
-          </div>
-
-          <div style="margin-top:14px" class="vacBox">
-            <details>
-              <summary>Отпуска (контроль)</summary>
-              <div class="muted small" style="margin-top:6px">
-                Подтягивается из <span class="mono">vacations.json</span>. Полезно, чтобы не ставить сроки на людей в отпуске.
-              </div>
-              <div class="vacList" id="vacToday"></div>
-              <div class="vacList" id="vacSoon" style="margin-top:8px"></div>
-            </details>
-          </div>
-
-          <div class="hint" style="margin-top:12px">
-            “По-взрослому”: общий файл <span class="mono">tasks.json</span> в репозитории.
-            Чтобы сохранять изменения — нужен GitHub токен у сотрудника (вводится в “Настройках” и хранится только у него в браузере).
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="task-list"></div>
+    <button id="add-task-btn">+ Добавить задачу</button>
   </div>
 
-  <!-- МОДАЛКА: редактирование -->
-  <div id="mEdit" class="modal" role="dialog" aria-modal="true">
-    <div class="box">
-      <div class="hd">
-        <div class="h">Задача <span class="mono" id="mId"></span></div>
-        <div class="rightBtns">
-          <button id="mClose">Закрыть</button>
+  <!-- Модалка (добавление/редактирование) -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modalTitle"></h2>
+      <form id="taskForm">
+        <input type="hidden" id="taskId" />
+        <div class="form-group">
+          <label for="taskText">Задача</label>
+          <textarea id="taskText" required placeholder="Что нужно сделать?" maxlength="500"></textarea>
         </div>
-      </div>
-      <div class="bd">
-        <div>
-          <label>Задача</label>
-          <textarea id="mTask"></textarea>
+        <div class="form-group">
+          <label for="taskOwner">Ответственный</label>
+          <select id="taskOwner"></select>
         </div>
-
-        <div class="two" style="margin-top:10px">
-          <div>
-            <label>Ответственный</label>
-            <select id="mOwner"></select>
-          </div>
-          <div>
-            <label>Срок</label>
-            <input id="mDue" type="date" />
-          </div>
+        <div class="form-group">
+          <label for="taskDue">Срок</label>
+          <input type="date" id="taskDue" />
         </div>
-
-        <div class="two" style="margin-top:10px">
-          <div>
-            <label>Статус</label>
-            <select id="mStatus">
-              <option>В план</option>
-              <option>В работе</option>
-              <option>Готово</option>
-            </select>
-          </div>
-          <div>
-            <label>Следующий шаг</label>
-            <input id="mNext" />
-          </div>
+        <div class="form-group">
+          <label for="taskStatus">Статус</label>
+          <select id="taskStatus">
+            <option value="В план">В план</option>
+            <option value="В работе">В работе</option>
+            <option value="Готово">Готово</option>
+          </select>
         </div>
-
-        <div id="mWarn" class="warnLine" style="display:none"></div>
-
-        <div class="row" style="margin-top:12px">
-          <button id="mSave" class="good">Сохранить</button>
-          <button id="mDone" class="primary">Отметить “Готово”</button>
-          <button id="mDel" class="danger">Удалить</button>
+        <div class="form-group">
+          <label for="taskNext">Следующий шаг</label>
+          <input id="taskNext" type="text" placeholder="Например: согласовать / отправить..." />
         </div>
-      </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelBtn">Отмена</button>
+          <button type="submit" class="btn-save" id="saveBtn">Сохранить</button>
+        </div>
+      </form>
     </div>
   </div>
-
-  <!-- МОДАЛКА: настройки -->
-  <div id="mSet" class="modal" role="dialog" aria-modal="true">
-    <div class="box">
-      <div class="hd">
-        <div class="h">Настройки синхронизации</div>
-        <div class="rightBtns">
-          <button id="sClose">Закрыть</button>
-        </div>
-      </div>
-      <div class="bd">
-        <div class="two">
-          <div>
-            <label>Владелец репозитория (owner)</label>
-            <input id="sOwner" placeholder="например: Anatoliy031" />
-          </div>
-          <div>
-            <label>Репозиторий (repo)</label>
-            <input id="sRepo" placeholder="например: drnu-task-tracker" />
-          </div>
-        </div>
-
-        <div class="two" style="margin-top:10px">
-          <div>
-            <label>Ветка</label>
-            <input id="sBranch" placeholder="main" />
-          </div>
-          <div>
-            <label>Путь к файлу задач</label>
-            <input id="sPath" placeholder="tasks.json" />
-          </div>
-        </div>
-
-        <div style="margin-top:10px">
-          <label>GitHub токен (PAT) — нужен для “Сохранить”</label>
-          <input id="sToken" placeholder="ghp_... (сохранится только в вашем браузере)" />
-          <div class="hint" style="margin-top:6px">
-            Рекомендация: делайте токен с правами <b>Contents: Read and write</b> только на этот репозиторий (fine-grained token).
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button id="sSave" class="good">Сохранить настройки</button>
-          <button id="sTest">Проверить доступ</button>
-        </div>
-
-        <div id="sMsg" class="hint" style="margin-top:10px"></div>
-      </div>
-    </div>
-  </div>
-
-<script>
-/* ==========================
-   Конфиг / состояние
-========================== */
-const LS_CFG = "drnu_cfg_v2";
-const LS_ME  = "drnu_me_v2";
-
-const DEFAULT_CFG = { owner:"", repo:"", branch:"main", path:"tasks.json", token:"" };
-
-let CFG = loadCfg();
-let VAC = { сотрудники: [] };
-
-let STATE = {
-  tasks: [],
-  remoteSha: null,
-  lastLoadedAt: null,
-  quick: "Все", // Все | Мои | Горит | Просрочено | Готово
-};
-
-const $ = (id)=>document.getElementById(id);
-
-function loadCfg(){
-  try { return { ...DEFAULT_CFG, ...(JSON.parse(localStorage.getItem(LS_CFG)||"{}")) }; }
-  catch { return { ...DEFAULT_CFG }; }
-}
-function saveCfg(){
-  localStorage.setItem(LS_CFG, JSON.stringify(CFG));
-  $("filePathView").textContent = CFG.path || "tasks.json";
-  updateSyncUI();
-}
-
-function isoNow(){ return new Date().toISOString(); }
-function todayISO(){
-  const d=new Date(); const pad=(n)=>String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
-function addDaysISO(iso, n){
-  const d = new Date(iso+"T00:00:00");
-  d.setDate(d.getDate()+n);
-  return d.toISOString().slice(0,10);
-}
-function escapeHTML(s){ return String(s ?? "").replace(/[&<>"']/g, m => ({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[m]));}
-
-/* ==========================
-   Данные отпусков
-========================== */
-async function loadVacations(){
-  try{
-    const r = await fetch(`vacations.json?v=${Date.now()}`, { cache:"no-store" });
-    if(!r.ok) throw new Error("vacations.json не найден");
-    VAC = await r.json();
-  }catch(e){
-    VAC = { сотрудники: [] };
-  }
-}
-
-function employees(){
-  return (VAC.сотрудники || []).map(x=>x["ФИО"]).filter(Boolean).sort((a,b)=>a.localeCompare(b,"ru"));
-}
-function employeePosition(name){
-  const e = (VAC.сотрудники||[]).find(x=>x["ФИО"]===name);
-  return e ? (e["должность"]||"") : "";
-}
-function vacationsFor(name){
-  const e = (VAC.сотрудники||[]).find(x=>x["ФИО"]===name);
-  return e ? (e["отпуска"]||[]) : [];
-}
-function dateInRange(dateISO, aISO, bISO){
-  if(!dateISO || !aISO || !bISO) return false;
-  const d=new Date(dateISO+"T00:00:00");
-  const a=new Date(aISO+"T00:00:00");
-  const b=new Date(bISO+"T00:00:00");
-  return d>=a && d<=b;
-}
-function overlapsVacation(name, dateISO){
-  const v = vacationsFor(name);
-  for(const it of v){
-    if(dateInRange(dateISO, it["начало"], it["конец"])) return it;
-  }
-  return null;
-}
-function renderVacControl(){
-  const t = todayISO();
-  const soonTo = addDaysISO(t, 14);
-
-  const todayList = [];
-  const soonList = [];
-
-  for(const e of (VAC.сотрудники||[])){
-    const fio = e["ФИО"];
-    const pos = e["должность"] || "";
-    for(const v of (e["отпуска"]||[])){
-      const a=v["начало"], b=v["конец"];
-      if(dateInRange(t, a, b)){
-        todayList.push({fio,pos,a,b,days:v["дней"]});
-      }else{
-        // ближайшие 14 дней: пересечение [t; soonTo]
-        const A=new Date(a+"T00:00:00"), B=new Date(b+"T00:00:00");
-        const T=new Date(t+"T00:00:00"), S=new Date(soonTo+"T00:00:00");
-        if(B>=T && A<=S){
-          soonList.push({fio,pos,a,b,days:v["дней"]});
-        }
+  <script>
+  (function(){
+    'use strict';
+    /*
+      Конфигурация репозитория. Заполните 'token' вашим PAT с правами только на contents репозитория.
+      Сотрудники не видят этот токен, потому что он зашит в коде. Будьте осторожны с конфигурацией.
+    */
+    const CONFIG = {
+      owner: 'Anatoliy031',
+      repo: 'Task',
+      branch: 'main',
+      path: 'tasks.json',
+      token: '' // ← сюда вставьте ваш GitHub PAT (fine-grained)
+    };
+    // URL для GitHub API
+    function apiUrl(){
+      return \`https://api.github.com/repos/\${encodeURIComponent(CONFIG.owner)}/\${encodeURIComponent(CONFIG.repo)}/contents/\${CONFIG.path}\`;
+    }
+    // Состояние приложения
+    let state = {
+      tasks: [],
+      lastLoaded: null,
+      remoteSha: null,
+      saving: false,
+      filter: 'all',
+      search: '',
+      me: localStorage.getItem('drnu_me_v2') || '',
+      pendingSave: false
+    };
+    // Загружаем список сотрудников из vacations.json
+    let employees = [];
+    async function loadEmployees(){
+      try {
+        const resp = await fetch('vacations.json?v=' + Date.now(), { cache: 'no-store' });
+        const vac = await resp.json();
+        employees = (vac.сотрудники||[]).map(x => x['ФИО']).filter(Boolean).sort((a,b)=>a.localeCompare(b,'ru'));
+      } catch(e) {
+        employees = [];
       }
     }
-  }
-
-  todayList.sort((x,y)=>x.fio.localeCompare(y.fio,"ru"));
-  soonList.sort((x,y)=>new Date(x.a)-new Date(y.a));
-
-  $("vacToday").innerHTML = todayList.length
-    ? `<div class="muted small">Сегодня в отпуске:</div>` + todayList.map(x =>
-      `<div class="vacItem"><span class="dot warn"></span><b>${escapeHTML(x.fio)}</b><span class="muted">${escapeHTML(x.pos)}</span><span class="muted">•</span><span>${x.a} → ${x.b}</span></div>`
-    ).join("")
-    : `<div class="muted small">Сегодня никто не в отпуске (по данным графика).</div>`;
-
-  $("vacSoon").innerHTML = soonList.length
-    ? `<div class="muted small">В ближайшие 14 дней:</div>` + soonList.slice(0,8).map(x =>
-      `<div class="vacItem"><span class="dot"></span><b>${escapeHTML(x.fio)}</b><span class="muted">${escapeHTML(x.pos)}</span><span class="muted">•</span><span>${x.a} → ${x.b}</span></div>`
-    ).join("") + (soonList.length>8 ? `<div class="muted small">…и ещё ${soonList.length-8}</div>` : "")
-    : `<div class="muted small">В ближайшие 14 дней отпусков не видно.</div>`;
-}
-
-/* ==========================
-   GitHub синхронизация
-========================== */
-function hasSyncConfig(){
-  return !!(CFG.owner && CFG.repo && CFG.branch && CFG.path);
-}
-function hasToken(){
-  return !!(CFG.token && CFG.token.trim().length > 10);
-}
-function updateSyncUI(){
-  const dot = $("syncDot");
-  const text = $("syncText");
-
-  if(!hasSyncConfig()){
-    dot.className="statusDot";
-    text.textContent="не настроена синхронизация";
-    $("btnSave").disabled = true;
-    return;
-  }
-  if(!hasToken()){
-    dot.className="statusDot";
-    text.textContent="режим просмотра (нет токена для сохранения)";
-    $("btnSave").disabled = true;
-    return;
-  }
-  dot.className="statusDot ok";
-  text.textContent="готово к сохранению в GitHub";
-  $("btnSave").disabled = false;
-}
-
-function ghApiUrl(){
-  return `https://api.github.com/repos/${encodeURIComponent(CFG.owner)}/${encodeURIComponent(CFG.repo)}/contents/${CFG.path}?ref=${encodeURIComponent(CFG.branch)}`;
-}
-function ghHeaders(){
-  return {
-    "Accept":"application/vnd.github+json",
-    "Authorization":`Bearer ${CFG.token}`,
-    "X-GitHub-Api-Version":"2022-11-28"
-  };
-}
-function b64utf8(str){
-  return btoa(unescape(encodeURIComponent(str)));
-}
-function utf8fromb64(b64){
-  return decodeURIComponent(escape(atob(b64)));
-}
-
-async function loadTasksFromPages(){
-  // общий просмотр: просто читаем tasks.json рядом с index.html
-  const path = CFG.path || "tasks.json";
-  const r = await fetch(`${path}?v=${Date.now()}`, { cache:"no-store" });
-  if(!r.ok) throw new Error(`Не могу загрузить ${path}`);
-  const j = await r.json();
-  return normalizeFile(j);
-}
-
-async function loadRemoteSha(){
-  // для сохранения нужен sha через API
-  const r = await fetch(ghApiUrl(), { headers: ghHeaders() });
-  if(!r.ok){
-    const t = await r.text();
-    throw new Error(`GitHub API (GET) ошибка: ${r.status}. ${t}`);
-  }
-  const j = await r.json();
-  const content = j.content ? utf8fromb64(j.content.replace(/\n/g,"")) : null;
-  const file = content ? normalizeFile(JSON.parse(content)) : normalizeFile({});
-  return { sha: j.sha, file };
-}
-
-async function saveToGitHub(localFile){
-  const { sha, file: remoteFile } = await loadRemoteSha();
-
-  // Мягкое слияние: по id, берём более новое по _изменено
-  const merged = mergeFiles(remoteFile, localFile);
-
-  const body = {
-    message: `Обновление задач (${new Date().toLocaleString("ru-RU")})`,
-    content: b64utf8(JSON.stringify(merged, null, 2)),
-    sha,
-    branch: CFG.branch
-  };
-
-  const r = await fetch(
-    `https://api.github.com/repos/${encodeURIComponent(CFG.owner)}/${encodeURIComponent(CFG.repo)}/contents/${CFG.path}`,
-    { method:"PUT", headers: { ...ghHeaders(), "Content-Type":"application/json" }, body: JSON.stringify(body) }
-  );
-
-  if(!r.ok){
-    const t = await r.text();
-    throw new Error(`GitHub API (PUT) ошибка: ${r.status}. ${t}`);
-  }
-  return true;
-}
-
-/* ==========================
-   Формат файла / задачи
-========================== */
-function normalizeTask(t){
-  const o = {
-    id: String(t.id || "").trim(),
-    задача: String(t["задача"] ?? "").trim(),
-    ответственный: String(t["ответственный"] ?? "").trim(),
-    срок: t["срок"] ? String(t["срок"]).slice(0,10) : "",
-    статус: (t["статус"] || "В работе"),
-    следующий_шаг: String(t["следующий_шаг"] ?? "").trim(),
-    _изменено: t["_изменено"] || isoNow()
-  };
-  if(!o.id) o.id = genId();
-  if(!["В план","В работе","Готово"].includes(o.статус)) o.статус = "В работе";
-  return o;
-}
-function normalizeFile(j){
-  const f = {
-    версия: 1,
-    обновлено: j.обновлено || isoNow(),
-    задачи: Array.isArray(j.задачи) ? j.задачи.map(normalizeTask) : []
-  };
-  return f;
-}
-function mergeFiles(remote, local){
-  const r = normalizeFile(remote);
-  const l = normalizeFile(local);
-
-  const map = new Map();
-  for(const t of r.задачи) map.set(t.id, t);
-
-  for(const t of l.задачи){
-    const prev = map.get(t.id);
-    if(!prev){
-      map.set(t.id, t);
-    }else{
-      const a = new Date(prev._изменено || "1970-01-01").getTime();
-      const b = new Date(t._изменено || "1970-01-01").getTime();
-      map.set(t.id, b >= a ? t : prev);
+    // Загружаем задачи из tasks.json (обычный GET)
+    async function loadTasks(){
+      try {
+        const resp = await fetch(\`\${CONFIG.path}?v=\${Date.now()}\`, { cache:'no-store' });
+        if(!resp.ok) throw new Error('Не удалось загрузить tasks.json');
+        const file = await resp.json();
+        const normalized = normalizeFile(file);
+        state.tasks = normalized.задачи;
+        state.lastLoaded = Date.now();
+        renderAll();
+      } catch(e) {
+        console.error(e);
+      }
     }
-  }
-
-  const merged = {
-    версия: 1,
-    обновлено: isoNow(),
-    задачи: Array.from(map.values())
-  };
-  // сортировка: сначала просрочено/горит, потом по сроку
-  merged.задачи.sort(sortTasks);
-  return merged;
-}
-
-function genId(){
-  // чтобы не конфликтовало при параллельном добавлении
-  const d = todayISO().replaceAll("-","");
-  const rnd = Math.random().toString(16).slice(2,6).toUpperCase();
-  return `T-${d}-${rnd}`;
-}
-
-/* ==========================
-   Логика сроков / сортировки
-========================== */
-function isOverdue(t){
-  if(t.статус==="Готово") return false;
-  if(!t.срок) return false;
-  return new Date(t.срок+"T00:00:00") < new Date(todayISO()+"T00:00:00");
-}
-function isSoon(t, days=3){
-  if(t.статус==="Готово") return false;
-  if(!t.срок) return false;
-  const a = new Date(todayISO()+"T00:00:00");
-  const b = new Date(t.срок+"T00:00:00");
-  const diff = Math.floor((b-a)/86400000);
-  return diff>=0 && diff<=days;
-}
-function dueBadge(t){
-  if(t.статус==="Готово") return `<span class="badge good"><span class="dot good"></span>${t.срок || "—"}</span>`;
-  if(isOverdue(t)) return `<span class="badge bad"><span class="dot bad"></span>${t.срок || "—"}</span>`;
-  if(isSoon(t,3)) return `<span class="badge warn"><span class="dot warn"></span>${t.срок || "—"}</span>`;
-  return `<span class="badge"><span class="dot"></span>${t.срок || "—"}</span>`;
-}
-function sortTasks(a,b){
-  const ao = isOverdue(a)?0 : (isSoon(a)?1:2);
-  const bo = isOverdue(b)?0 : (isSoon(b)?1:2);
-  if(ao!==bo) return ao-bo;
-  const ad = a.срок ? new Date(a.срок+"T00:00:00").getTime() : 9e15;
-  const bd = b.срок ? new Date(b.срок+"T00:00:00").getTime() : 9e15;
-  if(ad!==bd) return ad-bd;
-  return a.id.localeCompare(b.id);
-}
-
-/* ==========================
-   UI: сотрудники / фильтры
-========================== */
-function renderEmployeeSelects(){
-  const list = employees();
-  const optsAll = [`<option value="">Все</option>`].concat(list.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`)).join("");
-  const opts = list.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join("");
-
-  $("fOwner").innerHTML = optsAll;
-  $("nOwner").innerHTML = opts;
-  $("mOwner").innerHTML = opts;
-
-  // "Я"
-  const meOpts = [`<option value="">— выбрать —</option>`].concat(list.map(n=>`<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`)).join("");
-  $("meSel").innerHTML = meOpts;
-
-  const savedMe = localStorage.getItem(LS_ME) || "";
-  if(savedMe && list.includes(savedMe)) $("meSel").value = savedMe;
-}
-
-function setQuick(name){
-  STATE.quick = name;
-  renderQuick();
-  renderTable();
-}
-function renderQuick(){
-  const items = ["Все","Мои","Горит","Просрочено","Готово"];
-  $("quickFilters").innerHTML = items.map(x =>
-    `<button class="qbtn ${x===STATE.quick?"active":""}" data-q="${escapeHTML(x)}">${escapeHTML(x)}</button>`
-  ).join("");
-  for(const b of $("quickFilters").querySelectorAll("button[data-q]")){
-    b.addEventListener("click", ()=>setQuick(b.getAttribute("data-q")));
-  }
-}
-
-function filteredTasks(){
-  const q = ($("q").value||"").trim().toLowerCase();
-  const owner = $("fOwner").value || "";
-  const status = $("fStatus").value || "";
-  const me = $("meSel").value || "";
-
-  let arr = (STATE.tasks||[]).slice();
-
-  // quick
-  if(STATE.quick==="Мои" && me) arr = arr.filter(t=>t.ответственный===me);
-  if(STATE.quick==="Горит") arr = arr.filter(t=>isOverdue(t) || isSoon(t,3));
-  if(STATE.quick==="Просрочено") arr = arr.filter(t=>isOverdue(t));
-  if(STATE.quick==="Готово") arr = arr.filter(t=>t.статус==="Готово");
-
-  if(owner) arr = arr.filter(t=>t.ответственный===owner);
-  if(status) arr = arr.filter(t=>t.статус===status);
-
-  if(q){
-    arr = arr.filter(t => (`${t.id} ${t.задача} ${t.ответственный} ${t.следующий_шаг}`.toLowerCase().includes(q)));
-  }
-
-  arr.sort(sortTasks);
-  return arr;
-}
-
-function renderKPI(){
-  const all = STATE.tasks || [];
-  const overdue = all.filter(t=>isOverdue(t)).length;
-  const soon = all.filter(t=>!isOverdue(t) && isSoon(t,3)).length;
-  const inwork = all.filter(t=>t.статус==="В работе").length;
-  const plan = all.filter(t=>t.статус==="В план").length;
-  const done = all.filter(t=>t.статус==="Готово").length;
-
-  $("kpi").innerHTML = [
-    `<span class="chip"><span class="dot bad"></span>🔴 Просрочено: <b>${overdue}</b></span>`,
-    `<span class="chip"><span class="dot warn"></span>🟡 ≤ 3 дня: <b>${soon}</b></span>`,
-    `<span class="chip"><span class="dot"></span>🟢 В работе: <b>${inwork}</b></span>`,
-    `<span class="chip"><span class="dot"></span>📌 В план: <b>${plan}</b></span>`,
-    `<span class="chip"><span class="dot good"></span>✅ Готово: <b>${done}</b></span>`
-  ].join("");
-}
-
-function renderTable(){
-  renderKPI();
-  const arr = filteredTasks();
-  $("tb").innerHTML = arr.length ? arr.map(t=>{
-    const vac = (t.ответственный && t.срок) ? overlapsVacation(t.ответственный, t.срок) : null;
-    const vacMark = vac ? ` <span class="muted" title="Ответственный в отпуске на дату срока">🏖️</span>` : "";
-    return `
-      <tr data-id="${escapeHTML(t.id)}">
-        <td class="mono">${escapeHTML(t.id)}</td>
-        <td>${escapeHTML(t.задача)}</td>
-        <td>${escapeHTML(t.ответственный || "—")}${vacMark}</td>
-        <td>${dueBadge(t)}</td>
-        <td>${escapeHTML(t.статус)}</td>
-        <td>${escapeHTML(t.следующий_шаг || "")}</td>
-      </tr>
-    `;
-  }).join("") : `<tr><td colspan="6" class="muted">Нет задач по выбранным фильтрам.</td></tr>`;
-
-  for(const tr of $("tb").querySelectorAll("tr[data-id]")){
-    tr.addEventListener("click", ()=>openEdit(tr.getAttribute("data-id")));
-  }
-}
-
-/* ==========================
-   Добавление / редактирование
-========================== */
-function warnFor(owner, dueISO, el){
-  if(!owner || !dueISO){ el.style.display="none"; el.textContent=""; return; }
-  const v = overlapsVacation(owner, dueISO);
-  if(!v){ el.style.display="none"; el.textContent=""; return; }
-  el.style.display="block";
-  el.textContent = `⚠️ ${owner} в отпуске ${v["начало"]} → ${v["конец"]}. Подумайте о сроке/замене.`;
-}
-
-function addTask(){
-  const task = ($("nTask").value||"").trim();
-  const owner = $("nOwner").value || "";
-  const due = $("nDue").value || "";
-  const status = $("nStatus").value || "В работе";
-  const next = ($("nNext").value||"").trim();
-
-  if(!task){ alert("Заполните поле «Задача»."); return; }
-
-  const t = normalizeTask({
-    id: genId(),
-    задача: task,
-    ответственный: owner,
-    срок: due,
-    статус: status,
-    следующий_шаг: next,
-    _изменено: isoNow()
-  });
-
-  STATE.tasks.push(t);
-  STATE.tasks.sort(sortTasks);
-
-  // очистка
-  $("nTask").value = "";
-  $("nNext").value = "";
-  $("nStatus").value = "В работе";
-  $("nWarn").style.display="none";
-
-  renderTable();
-}
-
-let EDIT_ID = null;
-
-function openEdit(id){
-  const t = (STATE.tasks||[]).find(x=>x.id===id);
-  if(!t) return;
-
-  EDIT_ID = id;
-  $("mId").textContent = id;
-  $("mTask").value = t.задача || "";
-  $("mOwner").value = t.ответственный || "";
-  $("mDue").value = t.срок || "";
-  $("mStatus").value = t.статус || "В работе";
-  $("mNext").value = t.следующий_шаг || "";
-
-  warnFor($("mOwner").value, $("mDue").value, $("mWarn"));
-  $("mEdit").classList.add("open");
-}
-function closeEdit(){
-  $("mEdit").classList.remove("open");
-  EDIT_ID = null;
-}
-function saveEdit(){
-  if(!EDIT_ID) return;
-  const idx = STATE.tasks.findIndex(x=>x.id===EDIT_ID);
-  if(idx<0) return;
-
-  const task = ($("mTask").value||"").trim();
-  if(!task){ alert("Задача не может быть пустой."); return; }
-
-  STATE.tasks[idx] = normalizeTask({
-    id: EDIT_ID,
-    задача: task,
-    ответственный: $("mOwner").value || "",
-    срок: $("mDue").value || "",
-    статус: $("mStatus").value || "В работе",
-    следующий_шаг: ($("mNext").value||"").trim(),
-    _изменено: isoNow()
-  });
-
-  STATE.tasks.sort(sortTasks);
-  closeEdit();
-  renderTable();
-}
-function doneEdit(){
-  $("mStatus").value="Готово";
-  saveEdit();
-}
-function deleteEdit(){
-  if(!EDIT_ID) return;
-  if(!confirm(`Удалить задачу ${EDIT_ID}?`)) return;
-  STATE.tasks = STATE.tasks.filter(x=>x.id!==EDIT_ID);
-  closeEdit();
-  renderTable();
-}
-
-/* ==========================
-   Сводка
-========================== */
-async function copySummary(){
-  const all = (STATE.tasks||[]).slice().sort(sortTasks);
-  const t = todayISO();
-
-  const overdue = all.filter(x=>isOverdue(x));
-  const soon = all.filter(x=>!isOverdue(x) && isSoon(x,3));
-  const inwork = all.filter(x=>x.статус==="В работе");
-
-  const todayVac = [];
-  for(const e of (VAC.сотрудники||[])){
-    for(const v of (e.отпуска||[])){
-      if(dateInRange(t, v.начало, v.конец)) todayVac.push(`${e["ФИО"]} (${v.начало}→${v.конец})`);
+    // Нормализация задачи
+    function normalizeTask(t){
+      return {
+        id: String(t.id || '').trim() || genId(),
+        задача: String(t.задача || '').trim(),
+        ответственный: String(t.ответственный || '').trim(),
+        срок: t.срок ? String(t.срок).slice(0,10) : '',
+        статус: ['В план','В работе','Готово'].includes(t.статус) ? t.статус : 'В работе',
+        следующий_шаг: String(t.следующий_шаг || '').trim(),
+        _изменено: t._изменено || new Date().toISOString()
+      };
     }
-  }
-
-  function lines(arr){
-    return arr.map(x=>`- ${x.id} — ${x.задача} / ${x.ответственный || "—"} / срок ${x.срок || "—"} / шаг: ${x.следующий_шаг || "—"}`).join("\n");
-  }
-
-  const text =
-`Сводка ДРНУ на ${new Date().toLocaleDateString("ru-RU")}
-
-🔴 Просрочено (${overdue.length})
-${overdue.length?lines(overdue):"- нет"}
-
-🟡 Горит (≤3 дня) (${soon.length})
-${soon.length?lines(soon):"- нет"}
-
-🟢 В работе (${inwork.length})
-${inwork.length?lines(inwork.slice(0,20)):( "- нет")}${inwork.length>20?`\n…и ещё ${inwork.length-20}`:""}
-
-🏖️ Сегодня в отпуске
-${todayVac.length?todayVac.map(x=>`- ${x}`).join("\n"):"- нет (по данным графика)"}
-`;
-
-  try{
-    await navigator.clipboard.writeText(text);
-    alert("Сводка скопирована в буфер обмена.");
-  }catch{
-    prompt("Скопируйте сводку вручную:", text);
-  }
-}
-
-/* ==========================
-   Загрузка / сохранение
-========================== */
-async function loadAll(){
-  try{
-    // читаем общий tasks.json (через Pages)
-    const file = await loadTasksFromPages();
-    STATE.tasks = (file.задачи||[]).map(normalizeTask).sort(sortTasks);
-    STATE.lastLoadedAt = isoNow();
-
-    renderTable();
-    updateSyncUI();
-  }catch(e){
-    alert(String(e.message || e));
-  }
-}
-
-async function saveAll(){
-  if(!hasSyncConfig() || !hasToken()){
-    alert("Чтобы сохранять, настройте owner/repo/branch/path и токен в «Настройках».");
-    return;
-  }
-  try{
-    const localFile = normalizeFile({ задачи: STATE.tasks, обновлено: isoNow() });
-    await saveToGitHub(localFile);
-    alert("Сохранено в GitHub ✅\nЕсли у кого-то открыта старая версия — нажмите «Загрузить».");
-  }catch(e){
-    alert(String(e.message || e));
-  }
-}
-
-/* ==========================
-   Настройки
-========================== */
-function openSettings(){
-  $("sOwner").value = CFG.owner || "";
-  $("sRepo").value = CFG.repo || "";
-  $("sBranch").value = CFG.branch || "main";
-  $("sPath").value = CFG.path || "tasks.json";
-  $("sToken").value = CFG.token || "";
-  $("sMsg").textContent = "";
-  $("mSet").classList.add("open");
-}
-function closeSettings(){ $("mSet").classList.remove("open"); }
-function saveSettings(){
-  CFG.owner = ($("sOwner").value||"").trim();
-  CFG.repo  = ($("sRepo").value||"").trim();
-  CFG.branch= ($("sBranch").value||"main").trim() || "main";
-  CFG.path  = ($("sPath").value||"tasks.json").trim() || "tasks.json";
-  CFG.token = ($("sToken").value||"").trim();
-  saveCfg();
-  $("sMsg").textContent = "Сохранено. Теперь «Загрузить» читает общий файл, а «Сохранить» — пишет в репозиторий (если токен валиден).";
-}
-async function testSettings(){
-  try{
-    if(!hasSyncConfig() || !hasToken()) throw new Error("Заполните owner/repo/branch/path и токен.");
-    await loadRemoteSha();
-    $("sMsg").innerHTML = `<span style="color:var(--good)">Доступ есть ✅ Можно сохранять.</span>`;
-  }catch(e){
-    $("sMsg").innerHTML = `<span style="color:var(--bad)">Ошибка: ${escapeHTML(String(e.message||e))}</span>`;
-  }
-}
-
-/* ==========================
-   Инициализация
-========================== */
-async function init(){
-  $("filePathView").textContent = CFG.path || "tasks.json";
-
-  await loadVacations();
-  renderEmployeeSelects();
-  renderQuick();
-  renderVacControl();
-
-  // defaults for new
-  $("nDue").value = addDaysISO(todayISO(), 7);
-
-  // если выбрано "Я", подставим как ответственного в форме
-  const me = localStorage.getItem(LS_ME) || "";
-  if(me && employees().includes(me)) $("nOwner").value = me;
-
-  // hooks
-  $("btnLoad").addEventListener("click", loadAll);
-  $("btnSave").addEventListener("click", saveAll);
-  $("btnSummary").addEventListener("click", copySummary);
-  $("btnSettings").addEventListener("click", openSettings);
-
-  $("btnAdd").addEventListener("click", addTask);
-  $("btnClearNew").addEventListener("click", ()=>{
-    $("nTask").value=""; $("nNext").value=""; $("nWarn").style.display="none";
-  });
-  $("btnNew").addEventListener("click", ()=>{ $("nTask").focus(); });
-
-  $("q").addEventListener("input", renderTable);
-  $("fOwner").addEventListener("change", renderTable);
-  $("fStatus").addEventListener("change", renderTable);
-
-  $("meSel").addEventListener("change", ()=>{
-    const v = $("meSel").value || "";
-    if(v) localStorage.setItem(LS_ME, v);
-    $("nOwner").value = v || $("nOwner").value;
-    renderTable();
-  });
-
-  $("nOwner").addEventListener("change", ()=>warnFor($("nOwner").value, $("nDue").value, $("nWarn")));
-  $("nDue").addEventListener("change", ()=>warnFor($("nOwner").value, $("nDue").value, $("nWarn")));
-
-  // modal edit
-  $("mClose").addEventListener("click", closeEdit);
-  $("mSave").addEventListener("click", saveEdit);
-  $("mDone").addEventListener("click", doneEdit);
-  $("mDel").addEventListener("click", deleteEdit);
-  $("mOwner").addEventListener("change", ()=>warnFor($("mOwner").value, $("mDue").value, $("mWarn")));
-  $("mDue").addEventListener("change", ()=>warnFor($("mOwner").value, $("mDue").value, $("mWarn")));
-  $("mEdit").addEventListener("click", (e)=>{ if(e.target===$("mEdit")) closeEdit(); });
-  document.addEventListener("keydown", (e)=>{ if(e.key==="Escape"){ closeEdit(); closeSettings(); } });
-
-  // settings modal
-  $("sClose").addEventListener("click", closeSettings);
-  $("sSave").addEventListener("click", saveSettings);
-  $("sTest").addEventListener("click", testSettings);
-  $("mSet").addEventListener("click", (e)=>{ if(e.target===$("mSet")) closeSettings(); });
-
-  updateSyncUI();
-
-  // первая загрузка
-  await loadAll();
-}
-init();
-</script>
+    // Нормализация файла
+    function normalizeFile(f){
+      const out = { версия: 1, обновлено: f.обновлено || new Date().toISOString(), задачи: [] };
+      if(Array.isArray(f.задачи)){
+        out.задачи = f.задачи.map(normalizeTask);
+      }
+      out.задачи.sort(sortTasks);
+      return out;
+    }
+    // Генерация уникального ID (на основе даты + случайного)
+    function genId(){
+      const d = new Date();
+      const y = String(d.getFullYear());
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      const rnd = Math.random().toString(36).substr(2,4).toUpperCase();
+      return \`T-\${y}\${m}\${dd}-\${rnd}\`;
+    }
+    // Функции для сроков
+    function isOverdue(task){
+      if(task.статус === 'Готово') return false;
+      if(!task.срок) return false;
+      const due = new Date(task.срок + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      return due < today;
+    }
+    function isSoon(task, days=3){
+      if(task.статус === 'Готово') return false;
+      if(!task.срок) return false;
+      const due = new Date(task.срок + 'T00:00:00');
+      const today = new Date(); today.setHours(0,0,0,0);
+      const diff = Math.floor((due - today) / 86400000);
+      return diff >= 0 && diff <= days;
+    }
+    // Сортировка задач: просроченные, горящие, остальные; потом по дате
+    function sortTasks(a,b){
+      const ao = isOverdue(a) ? 0 : (isSoon(a) ? 1 : 2);
+      const bo = isOverdue(b) ? 0 : (isSoon(b) ? 1 : 2);
+      if(ao !== bo) return ao - bo;
+      const ad = a.срок ? new Date(a.срок + 'T00:00:00').getTime() : Infinity;
+      const bd = b.срок ? new Date(b.срок + 'T00:00:00').getTime() : Infinity;
+      if(ad !== bd) return ad - bd;
+      return a.id.localeCompare(b.id);
+    }
+    // Подсчёт KPI
+    function getSummary(){
+      const all = state.tasks;
+      return {
+        overdue: all.filter(t => isOverdue(t)).length,
+        soon: all.filter(t => !isOverdue(t) && isSoon(t)).length,
+        inProgress: all.filter(t => t.статус === 'В работе').length,
+        plan: all.filter(t => t.статус === 'В план').length,
+        done: all.filter(t => t.статус === 'Готово').length
+      };
+    }
+    // Фильтрация задач
+    function filteredTasks(){
+      let arr = state.tasks.slice();
+      // quick filter
+      switch(state.filter){
+        case 'mine': if(state.me) arr = arr.filter(t => t.ответственный === state.me); break;
+        case 'overdue': arr = arr.filter(isOverdue); break;
+        case 'soon': arr = arr.filter(t => !isOverdue(t) && isSoon(t)); break;
+        case 'done': arr = arr.filter(t => t.статус === 'Готово'); break;
+        default: break;
+      }
+      // search filter
+      const q = (state.search || '').trim().toLowerCase();
+      if(q){
+        arr = arr.filter(t => \`\${t.id} \${t.задача} \${t.ответственный} \${t.следующий_шаг}\`.toLowerCase().includes(q));
+      }
+      arr.sort(sortTasks);
+      return arr;
+    }
+    // Рендер всего интерфейса
+    function renderAll(){
+      renderSummary();
+      renderFilterChips();
+      renderTasks();
+      renderMeSelect();
+    }
+    function renderSummary(){
+      const s = getSummary();
+      const container = document.getElementById('summary');
+      container.innerHTML = [
+        \`<span class="chip"><span class="dot bad"></span>🔴 \${s.overdue}</span>\`,
+        \`<span class="chip"><span class="dot warn"></span>🟡 \${s.soon}</span>\`,
+        \`<span class="chip"><span class="dot"></span>🟢 \${s.inProgress}</span>\`,
+        \`<span class="chip"><span class="dot"></span>📌 \${s.plan}</span>\`,
+        \`<span class="chip"><span class="dot good"></span>✅ \${s.done}</span>\`
+      ].join('');
+      // status line: last updated, saving state
+      const statusEl = document.getElementById('statusLine');
+      const updatedText = state.lastLoaded ? \`Обновлено: \${new Date(state.lastLoaded).toLocaleTimeString('ru-RU')}\` : '';
+      let savingText = '';
+      if(state.saving) savingText = 'Сохранение...';
+      else if(state.pendingSave) savingText = 'Изменения не сохранены';
+      statusEl.textContent = \`\${updatedText}\${updatedText && (savingText?' • ':'')}\${savingText}\`;
+    }
+    function renderFilterChips(){
+      const chips = [
+        { key:'all', label:'Все' },
+        { key:'mine', label:'Мои' },
+        { key:'overdue', label:'Просрочено' },
+        { key:'soon', label:'≤3 дня' },
+        { key:'done', label:'Готово' }
+      ];
+      const el = document.getElementById('filterChips');
+      el.innerHTML = chips.map(c => \`<div class="filter-chip \${c.key===state.filter?'active':''}" data-key="\${c.key}">\${c.label}</div>\`).join('');
+      el.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.filter = btn.getAttribute('data-key');
+          renderTasks();
+          renderFilterChips();
+        });
+      });
+    }
+    function renderMeSelect(){
+      const select = document.getElementById('meSelect');
+      select.innerHTML = ['<option value="">—</option>'].concat(
+        employees.map(name => \`<option value="\${escapeHtml(name)}">\${escapeHtml(name)}</option>\`)
+      ).join('');
+      if(state.me && employees.includes(state.me)) select.value = state.me;
+      select.addEventListener('change', () => {
+        state.me = select.value || '';
+        localStorage.setItem('drnu_me_v2', state.me);
+        renderTasks();
+      });
+    }
+    function renderTasks(){
+      const list = document.getElementById('task-list');
+      const tasks = filteredTasks();
+      list.innerHTML = tasks.length ? tasks.map(t => renderTaskCard(t)).join('') : \`<div class="task-card"><div>Нет задач по выбранным фильтрам.</div></div>\`;
+      // attach actions
+      document.querySelectorAll('.task-actions button[data-id]').forEach(btn => {
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if(action === 'edit') openModalEdit(id);
+          else if(action === 'delete') deleteTask(id);
+          else if(action === 'done') markDone(id);
+        });
+      });
+      // attach click to open edit by clicking anywhere on card except actions
+      document.querySelectorAll('.task-card[data-id]').forEach(card => {
+        const id = card.getAttribute('data-id');
+        card.addEventListener('click', (e) => {
+          // ignore if clicked on button
+          if(e.target.closest('button')) return;
+          openModalEdit(id);
+        });
+      });
+    }
+    function renderTaskCard(t){
+      const overdue = isOverdue(t);
+      const soon = isSoon(t);
+      let badgeClass = '';
+      if(t.статус === 'Готово') badgeClass = 'good';
+      else if(overdue) badgeClass = 'bad';
+      else if(soon) badgeClass = 'warn';
+      return \`<div class="task-card" data-id="\${escapeHtml(t.id)}">
+        <div class="task-top">
+          <span class="task-id">\${escapeHtml(t.id)}</span>
+          <span class="due-badge \${badgeClass}">\${t.срок ? escapeHtml(t.срок) : '—'}</span>
+        </div>
+        <div class="task-desc">\${escapeHtml(t.задача)}</div>
+        <div class="task-meta">
+          \${t.ответственный ? \`<span>👤 \${escapeHtml(t.ответственный)}</span>\` : ''}
+          \${t.статус ? \`<span>📌 \${escapeHtml(t.статус)}</span>\` : ''}
+          \${t.следующий_шаг ? \`<span>➡️ \${escapeHtml(t.следующий_шаг)}</span>\` : ''}
+        </div>
+        <div class="task-actions">
+          \${t.статус !== 'Готово' ? \`<button data-id="\${escapeHtml(t.id)}" data-action="done" class="done" title="Отметить как готово">✔</button>\` : ''}
+          <button data-id="\${escapeHtml(t.id)}" data-action="edit" title="Редактировать">✏️</button>
+          <button data-id="\${escapeHtml(t.id)}" data-action="delete" class="danger" title="Удалить">🗑</button>
+        </div>
+      </div>\`;
+    }
+    // Escape HTML helper
+    function escapeHtml(str){
+      return String(str).replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\\'':'&#39;'}[m]));
+    }
+    // Добавление / редактирование
+    function openModalNew(){
+      document.getElementById('modalTitle').textContent = 'Новая задача';
+      document.getElementById('taskId').value = '';
+      document.getElementById('taskText').value = '';
+      document.getElementById('taskOwner').value = state.me || '';
+      document.getElementById('taskDue').value = '';
+      document.getElementById('taskStatus').value = 'В работе';
+      document.getElementById('taskNext').value = '';
+      document.getElementById('modal').classList.add('open');
+    }
+    function openModalEdit(id){
+      const t = state.tasks.find(x => x.id === id);
+      if(!t) return;
+      document.getElementById('modalTitle').textContent = \`Задача \${escapeHtml(t.id)}\`;
+      document.getElementById('taskId').value = t.id;
+      document.getElementById('taskText').value = t.задача;
+      document.getElementById('taskOwner').value = t.ответственный || '';
+      document.getElementById('taskDue').value = t.срок || '';
+      document.getElementById('taskStatus').value = t.статус;
+      document.getElementById('taskNext').value = t.следующий_шаг || '';
+      document.getElementById('modal').classList.add('open');
+    }
+    function closeModal(){
+      document.getElementById('modal').classList.remove('open');
+    }
+    function saveTaskFromModal(){
+      const id = document.getElementById('taskId').value;
+      const text = document.getElementById('taskText').value.trim();
+      if(!text){ alert('Введите задачу'); return; }
+      const owner = document.getElementById('taskOwner').value || '';
+      const due = document.getElementById('taskDue').value || '';
+      const status = document.getElementById('taskStatus').value;
+      const next = document.getElementById('taskNext').value.trim();
+      if(id){
+        // edit existing
+        const idx = state.tasks.findIndex(x => x.id === id);
+        if(idx >= 0){
+          state.tasks[idx] = normalizeTask({ id, задача:text, ответственный:owner, срок:due, статус:status, следующий_шаг:next, _изменено: new Date().toISOString() });
+        }
+      } else {
+        // new
+        const t = normalizeTask({ id: genId(), задача:text, ответственный:owner, срок:due, статус:status, следующий_шаг:next, _изменено: new Date().toISOString() });
+        state.tasks.push(t);
+      }
+      state.pendingSave = true;
+      state.tasks.sort(sortTasks);
+      renderAll();
+      closeModal();
+      scheduleSave();
+    }
+    function deleteTask(id){
+      if(!confirm('Удалить задачу?')) return;
+      state.tasks = state.tasks.filter(x => x.id !== id);
+      state.pendingSave = true;
+      renderAll();
+      scheduleSave();
+    }
+    function markDone(id){
+      const idx = state.tasks.findIndex(x => x.id === id);
+      if(idx < 0) return;
+      state.tasks[idx].статус = 'Готово';
+      state.tasks[idx]._изменено = new Date().toISOString();
+      state.pendingSave = true;
+      renderAll();
+      scheduleSave();
+    }
+    // Сохранение на GitHub
+    let saveTimer = null;
+    function scheduleSave(){
+      if(saveTimer) clearTimeout(saveTimer);
+      // сохранить через 2 секунды после последнего изменения
+      saveTimer = setTimeout(() => {
+        saveTasksToGitHub().catch(console.error);
+      }, 2000);
+    }
+    async function saveTasksToGitHub(){
+      if(!CONFIG.token){
+        console.warn('Нет токена: сохранение отключено');
+        state.pendingSave = false;
+        renderSummary();
+        return;
+      }
+      state.saving = true;
+      state.pendingSave = false;
+      renderSummary();
+      try {
+        // 1. Получаем remote sha и файл для слияния
+        const { sha: remoteSha, file: remoteFile } = await loadRemoteFileViaAPI();
+        state.remoteSha = remoteSha;
+        // 2. Слияние local + remote по id / _изменено
+        const localFile = normalizeFile({ задачи: state.tasks, обновлено: new Date().toISOString() });
+        const merged = mergeFiles(remoteFile, localFile);
+        // 3. PUT на GitHub API
+        const body = {
+          message: \`Обновление задач \${new Date().toLocaleString('ru-RU')}\`,
+          content: btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2)))),
+          branch: CONFIG.branch,
+          sha: remoteSha
+        };
+        const r = await fetch(apiUrl(), {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'Bearer ' + CONFIG.token,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+        if(!r.ok){
+          const txt = await r.text();
+          throw new Error('Ошибка сохранения: ' + r.status + ' ' + txt);
+        }
+        // успешно
+        state.tasks = merged.задачи;
+        state.saving = false;
+        state.pendingSave = false;
+        state.lastLoaded = Date.now();
+        renderAll();
+      } catch(e) {
+        console.error(e);
+        // оставляем флаг pendingSave true, чтобы попробовать позже
+        state.saving = false;
+        state.pendingSave = true;
+        renderSummary();
+      }
+    }
+    // Загрузка remote файла через GitHub API (получаем sha + json)
+    async function loadRemoteFileViaAPI(){
+      const url = apiUrl() + '?ref=' + encodeURIComponent(CONFIG.branch);
+      const r = await fetch(url, {
+        headers: {
+          'Authorization': CONFIG.token ? 'Bearer ' + CONFIG.token : undefined,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if(!r.ok){
+        throw new Error('Ошибка чтения файла GitHub API: ' + r.status);
+      }
+      const j = await r.json();
+      const content = j.content ? atob(j.content.replace(/\\n/g,'')) : '{}';
+      let file;
+      try {
+        file = JSON.parse(content);
+      } catch(e){
+        file = { задачи: [] };
+      }
+      return { sha: j.sha, file: normalizeFile(file) };
+    }
+    // Слияние файлов: по id, берём ту, у которой _изменено свежий
+    function mergeFiles(remote, local){
+      const map = new Map();
+      // remote
+      for(const t of remote.задачи) map.set(t.id, t);
+      // local
+      for(const t of local.задачи){
+        const prev = map.get(t.id);
+        if(!prev) map.set(t.id, t);
+        else {
+          const a = new Date(prev._изменено || '1970-01-01').getTime();
+          const b = new Date(t._изменено || '1970-01-01').getTime();
+          map.set(t.id, b >= a ? t : prev);
+        }
+      }
+      const merged = { версия: 1, обновлено: new Date().toISOString(), задачи: Array.from(map.values()) };
+      merged.задачи.sort(sortTasks);
+      return merged;
+    }
+    // Utils: periodic refresh
+    function startAutoRefresh(){
+      setInterval(async () => {
+        if(state.saving || state.pendingSave) return;
+        try {
+          const resp = await fetch(\`\${CONFIG.path}?v=\${Date.now()}\`, { cache:'no-store' });
+          if(resp.ok){
+            const file = await resp.json();
+            const norm = normalizeFile(file);
+            // Если remote дата изменилась — обновляем
+            // Сравниваем по _изменено задачи? Лучше по id count or hash; упрощённо: если количество задач отличается
+            if(norm.задачи.length !== state.tasks.length || JSON.stringify(norm.задачи.map(t=>t._изменено)) !== JSON.stringify(state.tasks.map(t=>t._изменено))){
+              state.tasks = norm.задачи;
+              state.lastLoaded = Date.now();
+              renderAll();
+            }
+          }
+        } catch(e){ console.error(e); }
+      }, 30000);
+    }
+    // Начальная загрузка
+    async function init(){
+      await loadEmployees();
+      renderMeSelect();
+      // заполняем селект в модале
+      const selAdd = document.getElementById('taskOwner');
+      selAdd.innerHTML = ['<option value="">—</option>'].concat(employees.map(n=>\`<option value="\${escapeHtml(n)}">\${escapeHtml(n)}</option>\`)).join('');
+      // добавляем события
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        state.search = e.target.value;
+        renderTasks();
+      });
+      document.getElementById('add-task-btn').addEventListener('click', openModalNew);
+      document.getElementById('cancelBtn').addEventListener('click', (e) => {
+        e.preventDefault(); closeModal();
+      });
+      document.getElementById('taskForm').addEventListener('submit', (e) => {
+        e.preventDefault(); saveTaskFromModal();
+      });
+      // load tasks
+      await loadTasks();
+      startAutoRefresh();
+    }
+    init();
+  })();
+  </script>
 </body>
 </html>
